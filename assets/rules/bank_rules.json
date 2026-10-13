@@ -1,1 +1,75 @@
-{}
+{
+  "schemaVersion": 1,
+  "rules": [
+    {
+      "bankId": "tcb",
+      "packageName": "com.techcombank.mobile",
+      "displayName": "Techcombank",
+      "amountPatterns": [
+        "[+-]?([\\d.,]+)\\s*(?:VND|đ)"
+      ],
+      "typeIndicators": {
+        "expense": ["-"],
+        "income": ["+"]
+      },
+      "notePattern": "ND:\\s*(.+?)(?:\\.\\s*SD:|$)",
+      "accountPattern": "TK\\s*(\\d{4})"
+    },
+    {
+      "bankId": "vcb",
+      "packageName": "com.VCB",
+      "displayName": "Vietcombank",
+      "amountPatterns": [
+        "[+-]?([\\d.,]+)\\s*(?:VND|đ)"
+      ],
+      "typeIndicators": {
+        "expense": ["-"],
+        "income": ["+"]
+      },
+      "notePattern": "Ref:\\s*(.+?)(?:\\.\\s*SD:|$)",
+      "accountPattern": "TK\\s*(\\d{4})"
+    },
+    {
+      "bankId": "mb",
+      "packageName": "com.mbmobile",
+      "displayName": "MB Bank",
+      "amountPatterns": [
+        "[+-]?([\\d.,]+)\\s*(?:VND|đ)"
+      ],
+      "typeIndicators": {
+        "expense": ["-", "GD thanh toan"],
+        "income": ["+", "GD nhan"]
+      },
+      "notePattern": "ND:\\s*(.+?)(?:\\.\\s*SD:|$)",
+      "accountPattern": "TK\\s*(\\d{4})"
+    },
+    {
+      "bankId": "momo",
+      "packageName": "com.mservice.momotransfer",
+      "displayName": "MoMo",
+      "amountPatterns": [
+        "[+-]?([\\d.,]+)\\s*(?:VND|đ|d)"
+      ],
+      "typeIndicators": {
+        "expense": ["-", "thanh toan", "chuyen tien"],
+        "income": ["+", "nhan tien"]
+      },
+      "notePattern": "(?:ND|Noi dung):\\s*(.+?)$",
+      "accountPattern": "(\\d{4})\\s*$"
+    },
+    {
+      "bankId": "zalopay",
+      "packageName": "vn.com.vng.zalopay",
+      "displayName": "ZaloPay",
+      "amountPatterns": [
+        "[+-]?([\\d.,]+)\\s*(?:VND|đ|d)"
+      ],
+      "typeIndicators": {
+        "expense": ["-", "thanh toan"],
+        "income": ["+", "nhan"]
+      },
+      "notePattern": "(?:ND|Noi dung):\\s*(.+?)$",
+      "accountPattern": "(\\d{4})\\s*$"
+    }
+  ]
+}
