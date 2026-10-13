@@ -1,48 +1,85 @@
-# BudgetMate - Sổ Thu Chi Thông Minh 📱💰
+# BudgetMate - Quản Lý Thu Chi Tự Động & Bảo Mật 📱💰
 
-> Ứng dụng di động quản lý chi tiêu cá nhân 100% Local-First (Zero-Knowledge) trên nền tảng Flutter & Pure Java Android Native.
+<p align="center">
+  <img src="assets/images/logo.png" alt="BudgetMate Logo" width="100" style="border-radius: 20px;" />
+</p>
 
----
-
-## ✨ Tính Năng Nổi Bật
-
-1. **Tự động bắt biến động số dư ngân hàng:**
-   * Sử dụng tầng Native Java `NotificationListenerService` đệm an toàn vào SQLite (`raw_notifications`).
-   * Bóc tách Regex JSON động (`bank_rules.json`) hỗ trợ Techcombank, Vietcombank, MB Bank, MoMo, ZaloPay...
-2. **Chống trùng lặp 2 lớp (Two-Tier Deduplication):**
-   * Lớp 1 (Native Java): So khớp `sbn.getKey()` ngăn chặn trùng lặp ngay khi Android đẩy lại thông báo.
-   * Lớp 2 (SQLite): Truy vấn cửa sổ thời gian $\pm 60$ giây, triệt tiêu hoàn toàn hiện tượng *Boundary Effect*.
-3. **Ghép cặp Chuyển tiền nội bộ an toàn (Safe Transfer Matcher):**
-   * Tự động phát hiện giao dịch chuyển tiền giữa các ví của chính mình trong $\pm 120$ giây để loại bỏ khỏi báo cáo thu chi, tránh tính trùng.
-4. **Quản lý Ngân sách & Chi phí cố định (Anti Double-Counting):**
-   * Chu kỳ ngân sách linh hoạt theo ngày nhận lương.
-   * Quản lý trạng thái thanh toán chi phí định kỳ (`recurring_payments`) để không bị trừ 2 lần vào ngân sách khả dụng.
-5. **Nhập thủ công siêu tốc (Quick Add 3 chạm):**
-   * Bàn phím số lớn có phím tắt tiền mặt VN (`50k`, `100k`, `200k`, `500k`) và phép tính nhanh.
-6. **Bảo mật tuyệt đối (100% Local-First):**
-   * Toàn bộ dữ liệu tài chính lưu trên SQLite nội bộ thiết bị, không gửi dữ liệu lên bất kỳ máy chủ đám mây nào.
+<p align="center">
+  Ứng dụng theo dõi thu chi cá nhân tự động trên điện thoại, hoạt động <b>100% Offline (Local-First)</b>, không dùng server ngoài và đặt <b>quyền riêng tư dữ liệu tài chính</b> lên hàng đầu.
+</p>
 
 ---
 
-## 🛠️ Ngăn Xếp Công Nghệ (Tech Stack)
+## 🎯 Chức Năng Chính
 
-* **UI Framework:** Flutter 3.47.7 (Dart 3.13.5)
-* **Android Native Layer:** 100% Pure Java (OpenJDK 17 LTS, Android API 36)
-* **Cơ sở dữ liệu:** SQLite (`sqflite`)
-* **Thiết kế:** UI/UX Pro Max Fintech Glassmorphism (Dark / Light mode)
+### 1. Tự động ghi nhận giao dịch từ ngân hàng & ví điện tử
+* **Đọc thông báo tự động:** Nhận diện biến động số dư tức thời từ ứng dụng ngân hàng và tin nhắn SMS ngân hàng (Vietcombank, Techcombank, MB Bank, Sacombank, MoMo, ZaloPay...).
+* **Bóc tách dữ liệu thông minh:** Tự động tách số tiền, loại giao dịch (thu / chi), số tài khoản và nội dung chuyển khoản bằng bộ quy tắc linh hoạt (`bank_rules.json`).
+* **Tự động đồng bộ:** Dữ liệu mới được cập nhật ngay khi bạn mở lại ứng dụng hoặc vuốt màn hình xuống (Pull-to-refresh).
+
+### 2. Lọc thông minh & chống trùng lặp dữ liệu
+* **Chống trùng thông báo:** Tự động bỏ qua các thông báo bị đẩy lại nhiều lần từ hệ thống Android.
+* **Nhận diện chuyển khoản nội bộ:** Tự động phát hiện khi bạn chuyển tiền qua lại giữa các tài khoản/ví của chính mình (trong khoảng thời gian gần nhau) để không tính nhầm thành chi tiêu thực tế.
+
+### 3. Quản lý ngân sách & Khoản chi định kỳ
+* **Kế hoạch ngân sách:** Đặt hạn mức chi tiêu theo tháng hoặc theo kỳ nhận lương thực tế.
+* **Chi phí cố định:** Quản lý các khoản tiền định kỳ (tiền nhà, điện, nước, internet...) để dự toán số tiền còn lại có thể chi tiêu trong tháng mà không bị tính trùng lặp.
+
+### 4. Nhập tay nhanh khi dùng tiền mặt (Quick Add)
+* **Bàn phím nhập liệu chuyên dụng:** Hỗ trợ tính toán nhanh và phím tắt các mệnh giá tiền mặt phổ biến (50k, 100k, 200k, 500k) giúp ghi chép tiền mặt chỉ trong vài giây.
 
 ---
 
-## 📂 Cấu Trúc Dự Án
+## 🔒 Bảo Mật & Quyền Riêng Tư
 
-```
-BudgetMate/
-├── .agent/               # Workflows và Agent Skills
-├── .agents/              # Agent customizations
-├── bugdetmate/           # Mã nguồn ứng dụng Flutter
-│   ├── android/          # Android Native (Pure Java Service)
-│   ├── assets/           # Rules & static assets
-│   ├── lib/              # Clean Architecture (Core & Features)
-│   └── test/             # Unit tests & Widget tests
-└── docs/plans/           # Tài liệu thiết kế kỹ thuật & Kế hoạch triển khai
-```
+Dữ liệu tài chính là thông tin cực kỳ nhạy cảm. BudgetMate được thiết kế với triết lý bảo vệ người dùng:
+
+* **100% Cục bộ (Local-First):** Toàn bộ giao dịch, tài khoản và lịch sử chi tiêu được lưu trữ trực tiếp trong cơ sở dữ liệu SQLite nằm trong bộ nhớ riêng (sandboxed) của thiết bị. Ứng dụng **không có server đám mây, không có hệ thống theo dõi (tracking/analytics)** và **không bao giờ gửi dữ liệu tài chính ra Internet**.
+* **Không yêu cầu quyền đọc toàn bộ SMS (`READ_SMS`):** Thay vì yêu cầu quyền truy cập toàn bộ hộp thư tin nhắn riêng tư, ứng dụng chỉ sử dụng dịch vụ lắng nghe thông báo của hệ điều hành (`NotificationListenerService`).
+* **Bộ lọc ứng dụng nghiêm ngặt (Package Whitelist):** Ứng dụng chỉ xử lý thông báo từ danh sách các ngân hàng, ví điện tử và tin nhắn ngân hàng được cấu hình. Mọi thông báo từ mạng xã hội, tin nhắn riêng tư hay các ứng dụng khác đều bị bỏ qua ngay tại tầng Native của hệ thống.
+* **Mã nguồn minh bạch:** Toàn bộ mã nguồn mở hoàn toàn, cho phép bạn tự kiểm tra toàn bộ quy trình đọc, xử lý và lưu trữ dữ liệu.
+
+---
+
+## 🏦 Danh Sách Ngân Hàng & Ví Đã Hỗ Trợ
+
+Hệ thống bóc tách giao dịch qua file cấu hình `assets/rules/bank_rules.json`, hiện đã hỗ trợ sẵn:
+* **Ngân hàng:** Vietcombank, Techcombank, MB Bank, Sacombank (App & SMS)...
+* **Ví điện tử:** MoMo, ZaloPay...
+
+*(Bạn có thể dễ dàng bổ sung ngân hàng mới bằng cách thêm quy tắc regex vào file `bank_rules.json` mà không cần sửa mã nguồn ứng dụng).*
+
+---
+
+## 🚀 Hướng Dẫn Cài Đặt & Chạy Ứng Dụng
+
+### Yêu cầu môi trường
+* **Flutter SDK:** >= 3.19.0
+* **Dart SDK:** >= 3.3.0
+* **Thiết bị:** Điện thoại Android (Android 8.0 trở lên) hoặc máy ảo Android.
+
+### Các bước chạy dự án
+
+1. **Clone mã nguồn:**
+   ```bash
+   git clone https://github.com/DoThanhBinh09052004/BudgetMate.git
+   cd BudgetMate
+   ```
+
+2. **Cài đặt thư viện:**
+   ```bash
+   flutter pub get
+   ```
+
+3. **Chạy thử ứng dụng trên điện thoại:**
+   * Kết nối điện thoại qua cáp USB và bật **Gỡ lỗi qua USB (USB Debugging)**.
+   * Chạy lệnh:
+     ```bash
+     flutter run
+     ```
+
+### Thiết lập quyền trên điện thoại (Quan trọng)
+* Sau khi mở ứng dụng lần đầu, cấp quyền **Truy cập thông báo (Notification Access)** cho BudgetMate trong cài đặt của máy.
+* **Lưu ý riêng cho máy Xiaomi / Redmi (MIUI & HyperOS):**
+  * Vào *Cài đặt* -> *Ứng dụng* -> *Quản lý ứng dụng* -> *BudgetMate*: Bật **Tự khởi chạy (Autostart)** và đặt Tiết kiệm pin thành **Không hạn chế**.
+  * Trong ứng dụng có sẵn màn hình **"Tối ưu MIUI / Xiaomi"** (nút khiên ở góc trên bên phải) để hỗ trợ bạn kiểm tra và kết nối lại dịch vụ nền khi cần.
