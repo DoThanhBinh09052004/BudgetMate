@@ -17,15 +17,45 @@ class RegexParserService {
     _rules = rulesList.map((r) => BankRule.fromJson(r)).toList();
   }
 
-  /// Trả về danh sách packageName đã cấu hình — dùng cho Java whitelist qua MethodChannel
+  /// Trả về danh sách packageName đã cấu hình (kèm theo các app SMS phổ biến) — dùng cho Java whitelist
   List<String> getPackageNames() {
-    return _rules.map((r) => r.packageName).toList();
+    final list = _rules.map((r) => r.packageName).toSet();
+    // Bổ sung các ứng dụng tin nhắn SMS mặc định để bắt thông báo biến động số dư qua SMS
+    list.addAll([
+      'com.google.android.apps.messaging', // Google Messages (phổ biến nhất trên Android mới)
+      'com.android.mms',                   // MIUI Messages (Xiaomi/Redmi) & AOSP SMS
+      'com.samsung.android.messaging',     // Samsung Messages
+    ]);
+    return list.toList();
   }
 
-  /// Parse thông báo thô từ một packageName cụ thể.
+  /// Parse thông báo thô từ một packageName cụ thể (hỗ trợ cả app ngân hàng và app SMS).
   /// Trả về null nếu không tìm được rule phù hợp hoặc không parse được amount.
-  ParsedTransaction? parse({required String packageName, required String text}) {
-    final rule = _rules.where((r) => r.packageName == packageName).firstOrNull;
+  ParsedTransaction? parse({required String packageName, required String text, String? title}) {
+    // 1. Tìm rule trực tiếp theo packageName
+    BankRule? rule = _rules.where((r) => r.packageName == packageName).firstOrNull;
+
+    // 2. Nếu là ứng dụng tin nhắn SMS (Google Messages, MIUI Messaging, Samsung Messages,...)
+    // Hoặc nếu không tìm thấy theo packageName: Quét theo brandname ngân hàng trong title/text
+    final isSmsApp = packageName.contains('messaging') ||
+        packageName.contains('mms') ||
+        packageName == 'com.android.mms' ||
+        packageName == 'com.google.android.apps.messaging' ||
+        packageName == 'com.samsung.android.messaging';
+
+    if (rule == null || isSmsApp) {
+      final combined = '${title ?? ''} $text'.toUpperCase();
+      final matchedByBrand = _rules.where((r) {
+        final brand = r.displayName.toUpperCase();
+        final id = r.bankId.toUpperCase();
+        return combined.contains(brand) || combined.contains(id);
+      }).firstOrNull;
+
+      if (matchedByBrand != null) {
+        rule = matchedByBrand;
+      }
+    }
+
     if (rule == null) return null;
 
     // 1. Parse amount

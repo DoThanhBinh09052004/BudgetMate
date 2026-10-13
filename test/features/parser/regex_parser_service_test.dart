@@ -64,6 +64,38 @@ void main() {
     expect(result.note.toLowerCase(), contains('luong'));
   });
 
+  test('Parse Sacombank expense notification correctly', () {
+    final sacomRule = BankRule(
+      bankId: 'sacombank',
+      packageName: 'com.sacombank.ewallet',
+      displayName: 'Sacombank',
+      amountPatterns: [
+        r'PS:\s*[+-]?([\d.,]+)\s*(?:VND|đ|d)',
+      ],
+      typeIndicators: const TypeIndicators(
+        expense: ['-', 'PS: -'],
+        income: ['+', 'PS: +'],
+      ),
+      notePattern: r'(?:Nội dung|Noi dung|ND):\s*(.+?)$',
+      accountPattern: r'TK:\s*(\d+)',
+    );
+
+    final customParser = RegexParserService(rules: [sacomRule]);
+    const rawText =
+        'SACOMBANK 13/10/2026 11:26\nTK: 0123456789\nPS: -30,000 VND\nSố dư khả dụng: 1,500,000 VND\nNội dung: Mua ca phe Highlands';
+
+    final result = customParser.parse(
+      packageName: 'com.sacombank.ewallet',
+      text: rawText,
+    );
+
+    expect(result, isNotNull);
+    expect(result!.amount, 30000.0);
+    expect(result.type, 'expense');
+    expect(result.note, contains('Mua ca phe Highlands'));
+    expect(result.accountSuffix, '0123456789');
+  });
+
   test('Returns null for unknown package name', () {
     const rawText = 'Some random notification text';
     final result = parser.parse(packageName: 'com.unknown.app', text: rawText);
@@ -80,10 +112,46 @@ void main() {
     }
   });
 
-  test('getPackageNames returns all configured bank packages', () {
+  test('Parse Sacombank SMS notification from Google Messages or MIUI SMS correctly', () {
+    final sacomRule = BankRule(
+      bankId: 'sacombank',
+      packageName: 'com.sacombank.ewallet',
+      displayName: 'Sacombank',
+      amountPatterns: [
+        r'PS:\s*[+-]?([\d.,]+)\s*(?:VND|đ|d)',
+      ],
+      typeIndicators: const TypeIndicators(
+        expense: ['-', 'PS: -'],
+        income: ['+', 'PS: +'],
+      ),
+      notePattern: r'(?:Nội dung|Noi dung|ND):\s*(.+?)$',
+      accountPattern: r'TK:\s*(\d+)',
+    );
+
+    final customParser = RegexParserService(rules: [sacomRule]);
+    const smsText =
+        'TK: 0123456789\nPS: -30,000 VND\nSố dư khả dụng: 1,500,000 VND\nNội dung: Mua ca phe Highlands';
+
+    // Notification từ app Google Messages (title thường là tên người gửi / brandname "SACOMBANK")
+    final result = customParser.parse(
+      packageName: 'com.google.android.apps.messaging',
+      title: 'SACOMBANK 13/10/2026 11:26',
+      text: smsText,
+    );
+
+    expect(result, isNotNull);
+    expect(result!.amount, 30000.0);
+    expect(result.type, 'expense');
+    expect(result.note, contains('Mua ca phe Highlands'));
+    expect(result.accountSuffix, '0123456789');
+  });
+
+  test('getPackageNames returns all configured bank packages plus SMS apps', () {
     final packages = parser.getPackageNames();
     expect(packages, contains('com.techcombank.mobile'));
     expect(packages, contains('com.VCB'));
-    expect(packages.length, 2);
+    expect(packages, contains('com.google.android.apps.messaging'));
+    expect(packages, contains('com.android.mms'));
+    expect(packages.length, 5);
   });
 }

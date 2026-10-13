@@ -70,6 +70,20 @@
       },
       "notePattern": "(?:ND|Noi dung):\\s*(.+?)$",
       "accountPattern": "(\\d{4})\\s*$"
+    },
+    {
+      "bankId": "sacombank",
+      "packageName": "com.sacombank.ewallet",
+      "displayName": "Sacombank",
+      "amountPatterns": [
+        "PS:\\s*[+-]?([\\d.,]+)\\s*(?:VND|đ|d)"
+      ],
+      "typeIndicators": {
+        "expense": ["-", "PS: -"],
+        "income": ["+", "PS: +"]
+      },
+      "notePattern": "(?:Nội dung|Noi dung|ND):\\s*(.+?)$",
+      "accountPattern": "TK:\\s*(\\d+)"
     }
   ]
 }

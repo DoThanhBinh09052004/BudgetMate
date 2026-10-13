@@ -8,6 +8,9 @@ import 'package:bugdetmate/features/budget/models/recurring_payment_model.dart';
 import 'package:bugdetmate/features/transactions/screens/quick_add_sheet.dart';
 import 'package:bugdetmate/features/settings/screens/miui_guide_screen.dart';
 
+import 'package:bugdetmate/core/widgets/app_logo.dart';
+import 'package:bugdetmate/features/parser/services/regex_parser_service.dart';
+import 'package:bugdetmate/features/parser/services/raw_sync_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// Màn hình chính HomeScreen với giao diện Fintech UI/UX Pro Max.
@@ -31,7 +34,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   late bool _isLoading;
   double _totalBalance = 0.0;
   BudgetSummary? _budgetSummary;
@@ -43,6 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     if (widget.initialTotalBalance != null ||
         widget.initialBudgetSummary != null ||
         widget.initialNeedsReviewTransactions != null) {
@@ -57,11 +61,33 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Khi quay lại app từ màn hình SMS/Notification, tự động refresh và bóc tách dữ liệu mới
+      _loadData();
+    }
+  }
+
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
 
     try {
       final db = widget.db ?? await DatabaseHelper.instance.database;
+
+      // 0. Tự động bóc tách và đồng bộ các thông báo SMS/App mới trong bộ đệm raw_notifications
+      try {
+        final parser = RegexParserService();
+        await parser.loadRulesFromAsset();
+        final rawSync = RawSyncService(db: db, parser: parser);
+        await rawSync.syncUnprocessed();
+      } catch (_) {}
 
       // 1. Calculate total balance across wallets
       final walletRows = await db.rawQuery('SELECT SUM(balance) as total FROM ${AppTables.wallets}');
@@ -124,23 +150,123 @@ class _HomeScreenState extends State<HomeScreen> {
     await _loadData();
   }
 
+  void _showAboutBudgetMate() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.darkSurface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const AppLogo(size: 72, borderRadius: 16, showShadow: true),
+            const SizedBox(height: 14),
+            const Text(
+              'BudgetMate',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Phiên bản 1.0.0 (Build 1)',
+              style: TextStyle(
+                fontSize: 13,
+                color: AppTheme.textMutedDark,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppTheme.darkSurfaceVariant,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: const Column(
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.lock_outline_rounded, size: 18, color: AppTheme.successGreen),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '100% Offline & Bảo mật: Toàn bộ dữ liệu tài chính lưu trên máy của bạn.',
+                          style: TextStyle(fontSize: 13, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.bolt_rounded, size: 18, color: AppTheme.warningAmber),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Tự động bắt biến động số dư SMS / Notification ngân hàng thông minh.',
+                          style: TextStyle(fontSize: 13, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryBlue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Đóng', style: TextStyle(fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryBlue.withAlpha(40),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.wallet_rounded, color: AppTheme.primaryBlue, size: 20),
+        title: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: _showAboutBudgetMate,
+          child: const Padding(
+            padding: EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppLogo(size: 32, borderRadius: 8),
+                SizedBox(width: 12),
+                Text('BudgetMate'),
+              ],
             ),
-            const SizedBox(width: 10),
-            const Text('BudgetMate'),
-          ],
+          ),
         ),
         actions: [
           IconButton(

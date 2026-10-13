@@ -26,8 +26,9 @@ class RawSyncService {
       final id = raw['id'] as int;
       final packageName = raw['package_name'] as String;
       final text = raw['text'] as String? ?? '';
+      final title = raw['title'] as String? ?? '';
 
-      final parsed = parser.parse(packageName: packageName, text: text);
+      final parsed = parser.parse(packageName: packageName, text: text, title: title);
 
       if (parsed != null) {
         await db.insert(AppTables.transactions, {
