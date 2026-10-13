@@ -20,13 +20,14 @@ class DatabaseHelper {
 
   Future<Database> getDatabase({bool inMemory = false}) async {
     if (inMemory) {
-      return await openDatabase(
+      _database = await openDatabase(
         inMemoryDatabasePath,
         version: AppConstants.dbVersion,
         onCreate: _onCreate,
         onUpgrade: _onUpgrade,
         onConfigure: _onConfigure,
       );
+      return _database!;
     }
 
     if (_database != null && _database!.isOpen) {
