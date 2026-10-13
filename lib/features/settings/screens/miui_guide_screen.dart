@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:bugdetmate/core/native_bridge/notification_bridge.dart';
 import 'package:bugdetmate/core/theme/app_theme.dart';
+import 'package:bugdetmate/core/widgets/app_logo.dart';
 
 /// Màn hình hướng dẫn thiết lập nền chuyên sâu cho Xiaomi/Redmi (MIUI & HyperOS).
 class MiuiGuideScreen extends StatefulWidget {
@@ -55,7 +56,13 @@ class _MiuiGuideScreenState extends State<MiuiGuideScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tối ưu MIUI / Xiaomi'),
+        title: const Row(
+          children: [
+            AppLogo(size: 26, borderRadius: 6),
+            SizedBox(width: 10),
+            Text('Tối ưu MIUI / Xiaomi'),
+          ],
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),

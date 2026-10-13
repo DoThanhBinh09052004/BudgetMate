@@ -41,4 +41,8 @@ class AppConstants {
   // ── MethodChannel ──
   static const String notificationChannelName =
       'com.budgetmate.bugdetmate/notification_service';
+
+  // ── Branding & Assets ──
+  static const String appLogo = 'assets/images/logo.png';
+  static const String appLogoJpeg = 'assets/images/logo.jpeg';
 }
