@@ -1,85 +1,122 @@
-# BudgetMate - Quản Lý Thu Chi Tự Động & Bảo Mật 📱💰
+# BudgetMate
 
-<p align="center">
-  <img src="assets/images/logo.png" alt="BudgetMate Logo" width="100" style="border-radius: 20px;" />
-</p>
+BudgetMate là ứng dụng quản lý chi tiêu cá nhân trên Android hoạt động theo mô hình **Local-First (hoàn toàn offline)**. Ứng dụng tự động ghi nhận thu chi bằng cách lắng nghe thông báo biến động số dư từ app ngân hàng và tin nhắn SMS, bóc tách dữ liệu theo quy tắc regex định sẵn và lưu trực tiếp vào cơ sở dữ liệu SQLite nội bộ trên máy.
 
-<p align="center">
-  Ứng dụng theo dõi thu chi cá nhân tự động trên điện thoại, hoạt động <b>100% Offline (Local-First)</b>, không dùng server ngoài và đặt <b>quyền riêng tư dữ liệu tài chính</b> lên hàng đầu.
-</p>
+Dự án được xây dựng với mục tiêu: **tiện lợi trong việc ghi chép nhưng không đánh đổi quyền riêng tư dữ liệu tài chính.**
 
 ---
 
-## 🎯 Chức Năng Chính
+## Luồng hoạt động (Architecture)
 
-### 1. Tự động ghi nhận giao dịch từ ngân hàng & ví điện tử
-* **Đọc thông báo tự động:** Nhận diện biến động số dư tức thời từ ứng dụng ngân hàng và tin nhắn SMS ngân hàng (Vietcombank, Techcombank, MB Bank, Sacombank, MoMo, ZaloPay...).
-* **Bóc tách dữ liệu thông minh:** Tự động tách số tiền, loại giao dịch (thu / chi), số tài khoản và nội dung chuyển khoản bằng bộ quy tắc linh hoạt (`bank_rules.json`).
-* **Tự động đồng bộ:** Dữ liệu mới được cập nhật ngay khi bạn mở lại ứng dụng hoặc vuốt màn hình xuống (Pull-to-refresh).
+```
+[Thông báo App Ngân hàng / SMS]
+              │
+              ▼
+[Android NotificationListenerService] (Pure Java)
+              │
+              ├─ Lọc theo Package Whitelist (chỉ nhận app ngân hàng / SMS)
+              ├─ Chống trùng lặp cấp Native (dựa trên sbn.getKey())
+              ▼
+[Bảng raw_notifications] (SQLite cục bộ)
+              │
+              ▼
+[RegexParserService] (Engine bóc tách Dart + bank_rules.json)
+              │
+              ├─ Nhận diện số tiền, loại thu/chi, số tài khoản, nội dung
+              ├─ Phát hiện chuyển tiền nội bộ giữa các ví (tránh tính trùng)
+              ▼
+[Bảng transactions] ──► [Giao diện Flutter]
+```
 
-### 2. Lọc thông minh & chống trùng lặp dữ liệu
-* **Chống trùng thông báo:** Tự động bỏ qua các thông báo bị đẩy lại nhiều lần từ hệ thống Android.
-* **Nhận diện chuyển khoản nội bộ:** Tự động phát hiện khi bạn chuyển tiền qua lại giữa các tài khoản/ví của chính mình (trong khoảng thời gian gần nhau) để không tính nhầm thành chi tiêu thực tế.
+---
+
+## Tính năng
+
+### 1. Tự động nhận diện biến động số dư
+- Bắt thông báo trực tiếp từ ứng dụng ngân hàng và tin nhắn SMS từ tổng đài ngân hàng.
+- Bóc tách tự động: số tiền giao dịch, loại giao dịch (tiền vào / tiền ra), số tài khoản nguồn và nội dung chuyển khoản.
+- Tự động đồng bộ và hiển thị ngay khi người dùng quay lại ứng dụng hoặc vuốt màn hình (Pull-to-refresh).
+
+### 2. Xử lý trùng lặp & Chuyển tiền nội bộ
+- **Chống trùng lặp 2 lớp:**
+  - Lớp 1 (Native Java): Khóa theo `sbnKey` để bỏ qua các thông báo bị hệ điều hành phát lại.
+  - Lớp 2 (Database): Đối soát trong khung thời gian ngắn để tránh ghi nhận 2 lần khi cả app ngân hàng và SMS cùng báo một giao dịch.
+- **Ghép cặp chuyển tiền nội bộ:** Khi bạn chuyển tiền giữa 2 tài khoản của chính mình (ví dụ từ Techcombank sang Sacombank), hệ thống tự nhận diện cặp giao dịch đối ứng (1 chi + 1 thu cùng số tiền trong khoảng thời gian ngắn) và ghi nhận là chuyển khoản nội bộ, không tính vào tổng chi tiêu.
 
 ### 3. Quản lý ngân sách & Khoản chi định kỳ
-* **Kế hoạch ngân sách:** Đặt hạn mức chi tiêu theo tháng hoặc theo kỳ nhận lương thực tế.
-* **Chi phí cố định:** Quản lý các khoản tiền định kỳ (tiền nhà, điện, nước, internet...) để dự toán số tiền còn lại có thể chi tiêu trong tháng mà không bị tính trùng lặp.
+- Thiết lập ngân sách chi tiêu linh hoạt theo tháng hoặc theo kỳ nhận lương.
+- Theo dõi các khoản chi cố định hàng tháng (tiền thuê nhà, internet, phí định kỳ) để tính toán chính xác số tiền khả dụng còn lại.
 
-### 4. Nhập tay nhanh khi dùng tiền mặt (Quick Add)
-* **Bàn phím nhập liệu chuyên dụng:** Hỗ trợ tính toán nhanh và phím tắt các mệnh giá tiền mặt phổ biến (50k, 100k, 200k, 500k) giúp ghi chép tiền mặt chỉ trong vài giây.
-
----
-
-## 🔒 Bảo Mật & Quyền Riêng Tư
-
-Dữ liệu tài chính là thông tin cực kỳ nhạy cảm. BudgetMate được thiết kế với triết lý bảo vệ người dùng:
-
-* **100% Cục bộ (Local-First):** Toàn bộ giao dịch, tài khoản và lịch sử chi tiêu được lưu trữ trực tiếp trong cơ sở dữ liệu SQLite nằm trong bộ nhớ riêng (sandboxed) của thiết bị. Ứng dụng **không có server đám mây, không có hệ thống theo dõi (tracking/analytics)** và **không bao giờ gửi dữ liệu tài chính ra Internet**.
-* **Không yêu cầu quyền đọc toàn bộ SMS (`READ_SMS`):** Thay vì yêu cầu quyền truy cập toàn bộ hộp thư tin nhắn riêng tư, ứng dụng chỉ sử dụng dịch vụ lắng nghe thông báo của hệ điều hành (`NotificationListenerService`).
-* **Bộ lọc ứng dụng nghiêm ngặt (Package Whitelist):** Ứng dụng chỉ xử lý thông báo từ danh sách các ngân hàng, ví điện tử và tin nhắn ngân hàng được cấu hình. Mọi thông báo từ mạng xã hội, tin nhắn riêng tư hay các ứng dụng khác đều bị bỏ qua ngay tại tầng Native của hệ thống.
-* **Mã nguồn minh bạch:** Toàn bộ mã nguồn mở hoàn toàn, cho phép bạn tự kiểm tra toàn bộ quy trình đọc, xử lý và lưu trữ dữ liệu.
+### 4. Nhập tay nhanh (Quick Add)
+- Dành cho các giao dịch tiền mặt.
+- Bàn phím số tích hợp sẵn các phím tắt mệnh giá tiền Việt (50k, 100k, 200k, 500k) và phép tính đơn giản, giúp nhập giao dịch chỉ với vài thao tác.
 
 ---
 
-## 🏦 Danh Sách Ngân Hàng & Ví Đã Hỗ Trợ
+## Bảo mật & Quyền riêng tư
 
-Hệ thống bóc tách giao dịch qua file cấu hình `assets/rules/bank_rules.json`, hiện đã hỗ trợ sẵn:
-* **Ngân hàng:** Vietcombank, Techcombank, MB Bank, Sacombank (App & SMS)...
-* **Ví điện tử:** MoMo, ZaloPay...
+Dữ liệu tài chính là thông tin cá nhân quan trọng nhất trên điện thoại. BudgetMate áp dụng các nguyên tắc kỹ thuật sau:
 
-*(Bạn có thể dễ dàng bổ sung ngân hàng mới bằng cách thêm quy tắc regex vào file `bank_rules.json` mà không cần sửa mã nguồn ứng dụng).*
+- **Hoàn toàn Offline (Zero Network Transmission):** Ứng dụng không có server backend, không có hệ thống theo dõi (tracking/analytics), không tích hợp SDK quảng cáo. Cơ sở dữ liệu SQLite nằm hoàn toàn trong sandbox riêng của ứng dụng trên thiết bị (`/data/data/com.budgetmate.bugdetmate/databases/`).
+- **Không yêu cầu quyền `READ_SMS`:** Ứng dụng không xin quyền đọc toàn bộ hộp thư SMS riêng tư của bạn. Việc đọc tin nhắn biến động số dư chỉ diễn ra khi ứng dụng tin nhắn đẩy thông báo lên thanh trạng thái (thông qua quyền `BIND_NOTIFICATION_LISTENER_SERVICE`).
+- **Lọc gói tin nghiêm ngặt (Whitelist):** Dịch vụ nền kiểm tra package name trước khi đọc nội dung. Mọi thông báo từ mạng xã hội, tin nhắn cá nhân, ứng dụng OTT... bị hủy ngay từ tầng native và không bao giờ được ghi vào bộ nhớ hay database.
+- **Mã nguồn mở:** Toàn bộ mã nguồn hiển thị minh bạch, bạn có thể tự build và kiểm tra trước khi cài đặt lên thiết bị cá nhân.
 
 ---
 
-## 🚀 Hướng Dẫn Cài Đặt & Chạy Ứng Dụng
+## Danh sách ngân hàng & ví hỗ trợ
 
-### Yêu cầu môi trường
-* **Flutter SDK:** >= 3.19.0
-* **Dart SDK:** >= 3.3.0
-* **Thiết bị:** Điện thoại Android (Android 8.0 trở lên) hoặc máy ảo Android.
+Quy tắc bóc tách được quản lý qua file [assets/rules/bank_rules.json](assets/rules/bank_rules.json). Hiện tại đã cấu hình sẵn:
 
-### Các bước chạy dự án
+| Đơn vị | Loại | Định danh (Package / Brandname) |
+|---|---|---|
+| **Vietcombank** | App | `com.VCB` |
+| **Techcombank** | App | `com.techcombank.mobile` |
+| **MB Bank** | App | `com.mbmobile` |
+| **Sacombank** | App & SMS | `com.sacombank.ewallet`, Brandname `SACOMBANK` |
+| **MoMo** | Ví điện tử | `com.mservice.momotransfer` |
+| **ZaloPay** | Ví điện tử | `vn.com.vng.zalopay` |
+| **SMS Ngân hàng** | Tin nhắn | Hỗ trợ Google Messages (`com.google.android.apps.messaging`), MIUI SMS (`com.android.mms`), Samsung Messages |
 
-1. **Clone mã nguồn:**
-   ```bash
-   git clone https://github.com/DoThanhBinh09052004/BudgetMate.git
-   cd BudgetMate
-   ```
+### Thêm ngân hàng mới
+Bạn có thể tự thêm ngân hàng vào `assets/rules/bank_rules.json` mà không cần viết lại logic:
 
-2. **Cài đặt thư viện:**
-   ```bash
-   flutter pub get
-   ```
+```json
+{
+  "bankId": "sacombank",
+  "packageName": "com.sacombank.ewallet",
+  "displayName": "Sacombank",
+  "amountPatterns": [
+    "PS:\\s*[+-]?([\\d.,]+)\\s*(?:VND|đ|d)"
+  ],
+  "typeIndicators": {
+    "expense": ["-", "PS: -"],
+    "income": ["+", "PS: +"]
+  },
+  "notePattern": "(?:Nội dung|Noi dung|ND):\\s*(.+?)$",
+  "accountPattern": "TK:\\s*(\\d+)"
+}
+```
 
-3. **Chạy thử ứng dụng trên điện thoại:**
-   * Kết nối điện thoại qua cáp USB và bật **Gỡ lỗi qua USB (USB Debugging)**.
-   * Chạy lệnh:
-     ```bash
-     flutter run
-     ```
+---
 
-### Thiết lập quyền trên điện thoại (Quan trọng)
-* Sau khi mở ứng dụng lần đầu, cấp quyền **Truy cập thông báo (Notification Access)** cho BudgetMate trong cài đặt của máy.
-* **Lưu ý riêng cho máy Xiaomi / Redmi (MIUI & HyperOS):**
-  * Vào *Cài đặt* -> *Ứng dụng* -> *Quản lý ứng dụng* -> *BudgetMate*: Bật **Tự khởi chạy (Autostart)** và đặt Tiết kiệm pin thành **Không hạn chế**.
-  * Trong ứng dụng có sẵn màn hình **"Tối ưu MIUI / Xiaomi"** (nút khiên ở góc trên bên phải) để hỗ trợ bạn kiểm tra và kết nối lại dịch vụ nền khi cần.
+## Cài đặt & Chạy ứng dụng
+
+### Yêu cầu
+- Flutter SDK >= 3.19.0
+- Thiết bị Android chạy Android 8.0 (API 26) trở lên
+
+### Khởi chạy từ source code
+```bash
+git clone https://github.com/DoThanhBinh09052004/BudgetMate.git
+cd BudgetMate
+flutter pub get
+flutter run
+```
+
+### Cấp quyền trên thiết bị
+1. Sau khi cài đặt, vào **Cài đặt hệ thống** $\rightarrow$ **Quyền truy cập thông báo (Notification Access)** $\rightarrow$ Bật cho **BudgetMate**.
+2. **Đối với thiết bị Xiaomi / Redmi (MIUI & HyperOS):**
+   - Vào *Cài đặt* $\rightarrow$ *Ứng dụng* $\rightarrow$ *Quản lý ứng dụng* $\rightarrow$ *BudgetMate*.
+   - Bật **Tự khởi chạy (Autostart)**.
+   - Mục *Tiết kiệm pin (Battery saver)*: Chọn **Không hạn chế (No restrictions)** để tránh hệ thống tự tắt dịch vụ ngầm.
