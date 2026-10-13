@@ -16,7 +16,8 @@ class AppTables {
       balance REAL DEFAULT 0,
       account_number_suffix TEXT,
       icon TEXT,
-      color TEXT
+      color TEXT,
+      created_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
     );
   ''';
 
@@ -27,7 +28,8 @@ class AppTables {
       type TEXT NOT NULL,
       icon TEXT,
       color TEXT,
-      is_default INTEGER DEFAULT 0
+      is_default INTEGER DEFAULT 0,
+      created_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
     );
   ''';
 
@@ -108,4 +110,46 @@ class AppTables {
       FOREIGN KEY (transaction_id) REFERENCES $transactions (id)
     );
   ''';
+
+  // ── Performance Indexes ──
+
+  /// Tối ưu cho Dedup Layer 2 query
+  static const String createIndexTransactionsDedup = '''
+    CREATE INDEX idx_transactions_dedup ON $transactions(wallet_id, amount, transaction_date);
+  ''';
+
+  /// Tối ưu cho truy vấn giao dịch theo ví và thời gian
+  static const String createIndexTransactionsWalletDate = '''
+    CREATE INDEX idx_transactions_wallet_date ON $transactions(wallet_id, transaction_date);
+  ''';
+
+  /// Partial index: chỉ index các bản ghi chưa xử lý
+  static const String createIndexRawNotificationsUnprocessed = '''
+    CREATE INDEX idx_raw_notifications_unprocessed ON $rawNotifications(is_processed) WHERE is_processed = 0;
+  ''';
+
+  /// Tối ưu cho truy vấn recurring payments theo chu kỳ
+  static const String createIndexRecurringPaymentsCycle = '''
+    CREATE INDEX idx_recurring_payments_cycle ON $recurringPayments(rule_id, cycle_month);
+  ''';
+
+  /// Danh sách tất cả CREATE TABLE statements theo thứ tự dependency
+  static const List<String> allCreateTableStatements = [
+    createWallets,
+    createCategories,
+    createRawNotifications,
+    createTransactions,
+    createUserCategoryRules,
+    createBudgets,
+    createRecurringRules,
+    createRecurringPayments,
+  ];
+
+  /// Danh sách tất cả CREATE INDEX statements
+  static const List<String> allCreateIndexStatements = [
+    createIndexTransactionsDedup,
+    createIndexTransactionsWalletDate,
+    createIndexRawNotificationsUnprocessed,
+    createIndexRecurringPaymentsCycle,
+  ];
 }

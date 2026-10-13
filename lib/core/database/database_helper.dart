@@ -1,11 +1,10 @@
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
+import 'package:bugdetmate/core/constants/app_constants.dart';
 import 'package:bugdetmate/core/database/tables.dart';
+import 'package:bugdetmate/core/database/seed_data.dart';
 
 class DatabaseHelper {
-  static const String _dbName = 'budgetmate.db';
-  static const int _dbVersion = 1;
-
   DatabaseHelper._internal();
   static final DatabaseHelper instance = DatabaseHelper._internal();
 
@@ -23,8 +22,9 @@ class DatabaseHelper {
     if (inMemory) {
       return await openDatabase(
         inMemoryDatabasePath,
-        version: _dbVersion,
+        version: AppConstants.dbVersion,
         onCreate: _onCreate,
+        onUpgrade: _onUpgrade,
         onConfigure: _onConfigure,
       );
     }
@@ -34,12 +34,13 @@ class DatabaseHelper {
     }
 
     final dbPath = await getDatabasesPath();
-    final path = p.join(dbPath, _dbName);
+    final path = p.join(dbPath, AppConstants.dbName);
 
     _database = await openDatabase(
       path,
-      version: _dbVersion,
+      version: AppConstants.dbVersion,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
       onConfigure: _onConfigure,
     );
 
@@ -53,52 +54,42 @@ class DatabaseHelper {
   Future<void> _onCreate(Database db, int version) async {
     final batch = db.batch();
 
-    batch.execute(AppTables.createWallets);
-    batch.execute(AppTables.createCategories);
-    batch.execute(AppTables.createRawNotifications);
-    batch.execute(AppTables.createTransactions);
-    batch.execute(AppTables.createUserCategoryRules);
-    batch.execute(AppTables.createBudgets);
-    batch.execute(AppTables.createRecurringRules);
-    batch.execute(AppTables.createRecurringPayments);
+    // Create all tables
+    for (final sql in AppTables.allCreateTableStatements) {
+      batch.execute(sql);
+    }
+
+    // Create all indexes
+    for (final sql in AppTables.allCreateIndexStatements) {
+      batch.execute(sql);
+    }
 
     await batch.commit(noResult: true);
 
     await _seedDefaults(db);
   }
 
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    // Migration scripts go here, executed sequentially.
+    // Each migration block handles upgrading from one version to the next.
+    //
+    // Example for future migrations:
+    // if (oldVersion < 2) {
+    //   await db.execute('ALTER TABLE wallets ADD COLUMN bank_code TEXT;');
+    // }
+    // if (oldVersion < 3) { ... }
+  }
+
   Future<void> _seedDefaults(Database db) async {
     final seedBatch = db.batch();
 
     // Default Wallets
-    seedBatch.insert(AppTables.wallets, {
-      'name': 'Tiền mặt',
-      'type': 'cash',
-      'balance': 0.0,
-      'account_number_suffix': null,
-      'icon': 'cash',
-      'color': '#10B981',
-    });
-    seedBatch.insert(AppTables.wallets, {
-      'name': 'Tài khoản ngân hàng',
-      'type': 'bank',
-      'balance': 0.0,
-      'account_number_suffix': null,
-      'icon': 'account_balance',
-      'color': '#1E40AF',
-    });
+    for (final wallet in SeedData.defaultWallets) {
+      seedBatch.insert(AppTables.wallets, wallet);
+    }
 
     // Default Expense Categories
-    final expenseCategories = [
-      {'name': 'Ăn uống', 'icon': 'restaurant', 'color': '#EF4444'},
-      {'name': 'Di chuyển', 'icon': 'directions_car', 'color': '#F59E0B'},
-      {'name': 'Mua sắm', 'icon': 'shopping_bag', 'color': '#EC4899'},
-      {'name': 'Hóa đơn & Dịch vụ', 'icon': 'receipt_long', 'color': '#3B82F6'},
-      {'name': 'Nhà cửa', 'icon': 'home', 'color': '#8B5CF6'},
-      {'name': 'Chuyển tiền nội bộ', 'icon': 'swap_horiz', 'color': '#64748B'},
-    ];
-
-    for (final cat in expenseCategories) {
+    for (final cat in SeedData.defaultExpenseCategories) {
       seedBatch.insert(AppTables.categories, {
         'name': cat['name'],
         'type': 'expense',
@@ -109,13 +100,7 @@ class DatabaseHelper {
     }
 
     // Default Income Categories
-    final incomeCategories = [
-      {'name': 'Lương', 'icon': 'payments', 'color': '#059669'},
-      {'name': 'Thưởng', 'icon': 'card_giftcard', 'color': '#10B981'},
-      {'name': 'Thu nhập khác', 'icon': 'add_circle', 'color': '#06B6D4'},
-    ];
-
-    for (final cat in incomeCategories) {
+    for (final cat in SeedData.defaultIncomeCategories) {
       seedBatch.insert(AppTables.categories, {
         'name': cat['name'],
         'type': 'income',
