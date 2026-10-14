@@ -49,12 +49,13 @@ class RawSyncService {
         );
 
         if (parsed != null) {
+          final cleanNote = parsed.note.trim().isEmpty ? null : parsed.note.trim();
           await txn.insert(AppTables.transactions, {
             'wallet_id': defaultWalletId,
             'amount': parsed.amount,
             'type': parsed.type,
             'transaction_date': raw['post_time'],
-            'note': parsed.note,
+            'note': cleanNote,
             'source': 'auto_notification',
             'raw_notification_id': id,
             'needs_review':
