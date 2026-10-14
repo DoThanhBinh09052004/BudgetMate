@@ -5,24 +5,30 @@ import 'package:flutter/material.dart';
 class AppTheme {
   AppTheme._();
 
-  // ── Palette Màu Cốt Lõi ──
-  static const Color darkBackground = Color(0xFF0A0F1D);
-  static const Color darkSurface = Color(0xFF1E293B);
-  static const Color darkSurfaceVariant = Color(0xFF161F30);
-  static const Color darkBorder = Color(0xFF334155);
+  // ── Palette Màu Cốt Lõi FinTech Emerald & Dark Charcoal ──
+  static const Color darkBackground = Color(0xFF121212);
+  static const Color darkSurface = Color(0xFF1E1E1E);
+  static const Color darkSurfaceVariant = Color(0xFF262626);
+  static const Color darkBorder = Color(0xFF2E2E2E);
 
   static const Color lightBackground = Color(0xFFF8FAFC);
   static const Color lightSurface = Color(0xFFFFFFFF);
   static const Color lightBorder = Color(0xFFE2E8F0);
 
-  static const Color primaryBlue = Color(0xFF3B82F6);
-  static const Color primaryBlueDark = Color(0xFF1D4ED8);
+  // Brand & Action Colors
+  static const Color primaryGreen = Color(0xFF10B981);
+  static const Color primaryEmerald = primaryGreen;
+  static const Color primaryGreenDark = Color(0xFF059669);
   static const Color successGreen = Color(0xFF10B981);
-  static const Color dangerRed = Color(0xFFEF4444);
-  static const Color warningAmber = Color(0xFFF59E0B);
+  static const Color incomeGreen = Color(0xFF34D399);
+  static const Color expenseRed = Color(0xFFF87171);
+  static const Color dangerRed = expenseRed;
+  static const Color primaryBlue = primaryGreen; // Tương thích ngược
+  static const Color primaryBlueDark = primaryGreenDark;
+  static const Color warningAmber = Color(0xFFFBBF24);
   static const Color purpleAccent = Color(0xFF8B5CF6);
 
-  static const Color textMutedDark = Color(0xFF94A3B8);
+  static const Color textMutedDark = Color(0xFF8E8E93);
   static const Color textMutedLight = Color(0xFF64748B);
 
   // ── Dark Theme (Mặc định) ──
@@ -31,10 +37,10 @@ class AppTheme {
     brightness: Brightness.dark,
     scaffoldBackgroundColor: darkBackground,
     colorScheme: const ColorScheme.dark(
-      primary: primaryBlue,
-      secondary: successGreen,
+      primary: primaryGreen,
+      secondary: incomeGreen,
       surface: darkSurface,
-      error: dangerRed,
+      error: expenseRed,
       onPrimary: Colors.white,
       onSurface: Colors.white,
     ),
@@ -59,7 +65,7 @@ class AppTheme {
       ),
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: primaryBlue,
+      backgroundColor: primaryGreen,
       foregroundColor: Colors.white,
       elevation: 4,
       shape: CircleBorder(),

@@ -5,7 +5,7 @@ class AppConstants {
 
   // ── Database ──
   static const String dbName = 'budgetmate.db';
-  static const int dbVersion = 1;
+  static const int dbVersion = 2;
 
   // ── Deduplication ──
   /// Cửa sổ thời gian (giây) cho Dedup Layer 2: giao dịch trong khoảng này

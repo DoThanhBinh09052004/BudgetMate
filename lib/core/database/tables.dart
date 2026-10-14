@@ -28,8 +28,10 @@ class AppTables {
       type TEXT NOT NULL,
       icon TEXT,
       color TEXT,
+      parent_id INTEGER,
       is_default INTEGER DEFAULT 0,
-      created_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+      created_at INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+      FOREIGN KEY (parent_id) REFERENCES $categories (id) ON DELETE CASCADE
     );
   ''';
 
