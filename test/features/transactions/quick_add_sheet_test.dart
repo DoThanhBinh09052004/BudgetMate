@@ -84,9 +84,12 @@ void main() {
       await tester.tap(find.text('Trà sữa & Cà phê'));
       await tester.pump();
 
-      // 5. Enter amount using quick chip (+50k)
-      await tester.tap(find.text('+50k'));
+      // 5. Enter amount using quick chip (50k)
+      await tester.tap(find.text('50k'));
       await tester.pump();
+
+      // Verify amount display has no +/- prefix
+      expect(find.text('50.000'), findsOneWidget);
 
       // 6. Tap Save button
       await tester.tap(find.text('Lưu Giao Dịch'));
