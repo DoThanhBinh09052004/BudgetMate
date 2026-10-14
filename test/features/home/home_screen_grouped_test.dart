@@ -41,6 +41,45 @@ void main() {
           'category_icon': 'utensils',
           'category_color': '#F97316',
         },
+        {
+          'id': 3,
+          'wallet_id': 1,
+          'category_id': 2,
+          'amount': 25000.0,
+          'type': 'expense',
+          'transaction_date': nowSeconds - 7200,
+          'note': '', // Empty string note should NOT cause blank title
+          'category_name': 'Di chuyển',
+          'parent_name': null,
+          'category_icon': 'car',
+          'category_color': '#0EA5E9',
+        },
+        {
+          'id': 4,
+          'wallet_id': 1,
+          'category_id': null,
+          'amount': 15000.0,
+          'type': 'expense',
+          'transaction_date': nowSeconds - 10800,
+          'note': 'Gửi xe bệnh viện',
+          'category_name': null,
+          'parent_name': null,
+          'category_icon': null,
+          'category_color': null,
+        },
+        {
+          'id': 5,
+          'wallet_id': 1,
+          'category_id': null,
+          'amount': 10000.0,
+          'type': 'expense',
+          'transaction_date': nowSeconds - 14400,
+          'note': '   ', // Blank whitespace note without category should fallback to 'Chi tiêu'
+          'category_name': null,
+          'parent_name': null,
+          'category_icon': null,
+          'category_color': null,
+        },
       ];
 
       await tester.pumpWidget(
@@ -58,15 +97,22 @@ void main() {
       // 1. Verify Date Header is present
       expect(find.text('14'), findsOneWidget); // Day number 14
       expect(
-        find.textContaining('105.000'),
+        find.textContaining('155.000'),
         findsOneWidget,
-      ); // Day total = 35k + 70k = 105k
+      ); // Day total = 35k + 70k + 25k + 15k + 10k = 155k
 
-      // 2. Verify Category Title formatting: "Ăn uống › Trà sữa" and "Ăn uống"
+      // 2. Verify Category Title formatting: "Ăn uống › Trà sữa" and "Ăn uống" and "Di chuyển"
       expect(find.text('Ăn uống › Trà sữa'), findsOneWidget);
       expect(find.text('Ăn uống'), findsOneWidget);
+      expect(find.text('Di chuyển'), findsOneWidget);
 
-      // 3. Verify Notes are shown in subtitles
+      // 3. Verify Note-as-title when category is null: "Gửi xe bệnh viện"
+      expect(find.text('Gửi xe bệnh viện'), findsOneWidget);
+
+      // 4. Verify Fallback title 'Chi tiêu' when note is blank whitespace and category is null
+      expect(find.text('Chi tiêu'), findsOneWidget);
+
+      // 5. Verify Notes are shown in subtitles
       expect(find.textContaining('ToCoToCo trân châu'), findsOneWidget);
       expect(find.textContaining('Cơm sườn'), findsOneWidget);
     },
