@@ -43,10 +43,7 @@ class AboutBottomSheet extends StatelessWidget {
           const SizedBox(height: 4),
           const Text(
             'Phiên bản 1.0.0 (Build 1)',
-            style: TextStyle(
-              fontSize: 13,
-              color: AppTheme.textMutedDark,
-            ),
+            style: TextStyle(fontSize: 13, color: AppTheme.textMutedDark),
           ),
           const SizedBox(height: 16),
           Container(
@@ -60,7 +57,11 @@ class AboutBottomSheet extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.lock_outline_rounded, size: 18, color: AppTheme.successGreen),
+                    Icon(
+                      Icons.lock_outline_rounded,
+                      size: 18,
+                      color: AppTheme.successGreen,
+                    ),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -73,7 +74,11 @@ class AboutBottomSheet extends StatelessWidget {
                 SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(Icons.bolt_rounded, size: 18, color: AppTheme.warningAmber),
+                    Icon(
+                      Icons.bolt_rounded,
+                      size: 18,
+                      color: AppTheme.warningAmber,
+                    ),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(

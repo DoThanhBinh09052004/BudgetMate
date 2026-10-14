@@ -77,8 +77,7 @@ class _PermissionGuideScreenState extends State<PermissionGuideScreen> {
           _buildStepCard(
             stepNumber: '1',
             title: 'Quyền Đọc Thông Báo (Bắt buộc)',
-            description:
-                'Cấp quyền truy cập thông báo để BudgetMate tự động nhận diện và bóc tách biến động số dư ngân hàng theo thời gian thực.',
+            description: 'Cấp quyền truy cập thông báo để BudgetMate tự động nhận diện và bóc tách biến động số dư ngân hàng theo thời gian thực.',
             actionLabel: 'Mở Cài Đặt Quyền',
             onAction: () async {
               await NotificationBridge.requestPermission();
@@ -88,20 +87,17 @@ class _PermissionGuideScreenState extends State<PermissionGuideScreen> {
           _buildStepCard(
             stepNumber: '2',
             title: 'Tắt Tối Ưu Hóa Pin (Không giới hạn)',
-            description:
-                'Vào Cài đặt ứng dụng > Pin (Battery) > Chọn "Không tối ưu hóa" hoặc "Không giới hạn" (Unrestricted) để hệ điều hành không đóng ngầm app.',
+            description: 'Vào Cài đặt ứng dụng > Pin (Battery) > Chọn "Không tối ưu hóa" hoặc "Không giới hạn" (Unrestricted) để hệ điều hành không đóng ngầm app.',
           ),
           _buildStepCard(
             stepNumber: '3',
             title: 'Cho Phép Chạy Nền & Tự Khởi Động',
-            description:
-                'Cho phép ứng dụng tự khởi động khi khởi động lại máy hoặc khi có thông báo ngân hàng gửi đến.',
+            description: 'Cho phép ứng dụng tự khởi động khi khởi động lại máy hoặc khi có thông báo ngân hàng gửi đến.',
           ),
           _buildStepCard(
             stepNumber: '4',
             title: 'Khóa Ứng Dụng Trong Đa Nhiệm',
-            description:
-                'Mở danh sách ứng dụng gần đây (Recent apps) > Nhấn giữ hoặc kéo BudgetMate > Nhấn biểu tượng Ổ Khóa 🔒 để không bị xóa khi dọn RAM.',
+            description: 'Mở danh sách ứng dụng gần đây (Recent apps) > Nhấn giữ hoặc kéo BudgetMate > Nhấn biểu tượng Ổ Khóa 🔒 để không bị xóa khi dọn RAM.',
           ),
           const SizedBox(height: 20),
           Card(
@@ -118,7 +114,10 @@ class _PermissionGuideScreenState extends State<PermissionGuideScreen> {
                   const SizedBox(height: 8),
                   const Text(
                     'Nếu bạn vừa thay đổi cài đặt hệ thống hoặc nghi ngờ dịch vụ đọc thông báo bị gián đoạn, hãy nhấn nút dưới để kích hoạt lại kết nối.',
-                    style: TextStyle(color: AppTheme.textMutedDark, fontSize: 13),
+                    style: TextStyle(
+                      color: AppTheme.textMutedDark,
+                      fontSize: 13,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   ElevatedButton.icon(
@@ -157,8 +156,12 @@ class _PermissionGuideScreenState extends State<PermissionGuideScreen> {
         child: Row(
           children: [
             Icon(
-              _hasPermission ? Icons.check_circle_rounded : Icons.warning_amber_rounded,
-              color: _hasPermission ? AppTheme.successGreen : AppTheme.warningAmber,
+              _hasPermission
+                  ? Icons.check_circle_rounded
+                  : Icons.warning_amber_rounded,
+              color: _hasPermission
+                  ? AppTheme.successGreen
+                  : AppTheme.warningAmber,
               size: 32,
             ),
             const SizedBox(width: 12),
@@ -167,10 +170,14 @@ class _PermissionGuideScreenState extends State<PermissionGuideScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _hasPermission ? 'Đã Cấp Quyền Đọc Thông Báo' : 'Chưa Cấp Quyền Đọc Thông Báo',
+                    _hasPermission
+                        ? 'Đã Cấp Quyền Đọc Thông Báo'
+                        : 'Chưa Cấp Quyền Đọc Thông Báo',
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      color: _hasPermission ? AppTheme.successGreen : AppTheme.warningAmber,
+                      color: _hasPermission
+                          ? AppTheme.successGreen
+                          : AppTheme.warningAmber,
                       fontSize: 15,
                     ),
                   ),
@@ -178,7 +185,10 @@ class _PermissionGuideScreenState extends State<PermissionGuideScreen> {
                     _hasPermission
                         ? 'Dịch vụ đang sẵn sàng ghi nhận biến động số dư tự động.'
                         : 'Vui lòng nhấn nút bên dưới để cấp quyền truy cập thông báo.',
-                    style: const TextStyle(fontSize: 12, color: AppTheme.textMutedDark),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppTheme.textMutedDark,
+                    ),
                   ),
                 ],
               ),
@@ -210,14 +220,21 @@ class _PermissionGuideScreenState extends State<PermissionGuideScreen> {
                   backgroundColor: AppTheme.primaryEmerald,
                   child: Text(
                     stepNumber,
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
                   ),
                 ),
               ],
@@ -225,7 +242,11 @@ class _PermissionGuideScreenState extends State<PermissionGuideScreen> {
             const SizedBox(height: 8),
             Text(
               description,
-              style: const TextStyle(color: AppTheme.textMutedDark, fontSize: 13, height: 1.4),
+              style: const TextStyle(
+                color: AppTheme.textMutedDark,
+                fontSize: 13,
+                height: 1.4,
+              ),
             ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 10),

@@ -12,49 +12,51 @@ void main() {
   }
 
   group('Global Widgets Tests', () {
-    testWidgets('AppPrimaryButton renders label, handles tap, and shows loading', (tester) async {
+    testWidgets(
+      'AppPrimaryButton renders label, handles tap, and shows loading',
+      (tester) async {
+        bool tapped = false;
+
+        await tester.pumpWidget(
+          buildTestableWidget(
+            AppPrimaryButton(
+              label: 'Lưu giao dịch',
+              icon: Icons.check,
+              onPressed: () => tapped = true,
+            ),
+          ),
+        );
+
+        expect(find.text('Lưu giao dịch'), findsOneWidget);
+        expect(find.byIcon(Icons.check), findsOneWidget);
+
+        await tester.tap(find.byType(AppPrimaryButton));
+        expect(tapped, isTrue);
+
+        // Test loading state
+        await tester.pumpWidget(
+          buildTestableWidget(
+            AppPrimaryButton(
+              label: 'Lưu giao dịch',
+              isLoading: true,
+              onPressed: () {},
+            ),
+          ),
+        );
+
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.text('Lưu giao dịch'), findsNothing);
+      },
+    );
+
+    testWidgets('AppSecondaryButton renders and responds to tap', (
+      tester,
+    ) async {
       bool tapped = false;
 
       await tester.pumpWidget(
         buildTestableWidget(
-          AppPrimaryButton(
-            label: 'Lưu giao dịch',
-            icon: Icons.check,
-            onPressed: () => tapped = true,
-          ),
-        ),
-      );
-
-      expect(find.text('Lưu giao dịch'), findsOneWidget);
-      expect(find.byIcon(Icons.check), findsOneWidget);
-
-      await tester.tap(find.byType(AppPrimaryButton));
-      expect(tapped, isTrue);
-
-      // Test loading state
-      await tester.pumpWidget(
-        buildTestableWidget(
-          AppPrimaryButton(
-            label: 'Lưu giao dịch',
-            isLoading: true,
-            onPressed: () {},
-          ),
-        ),
-      );
-
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      expect(find.text('Lưu giao dịch'), findsNothing);
-    });
-
-    testWidgets('AppSecondaryButton renders and responds to tap', (tester) async {
-      bool tapped = false;
-
-      await tester.pumpWidget(
-        buildTestableWidget(
-          AppSecondaryButton(
-            label: 'Hủy',
-            onPressed: () => tapped = true,
-          ),
+          AppSecondaryButton(label: 'Hủy', onPressed: () => tapped = true),
         ),
       );
 
@@ -85,7 +87,9 @@ void main() {
       expect(controller.text, 'Cơm trưa');
     });
 
-    testWidgets('AppEmptyState displays title, icon, and triggers action', (tester) async {
+    testWidgets('AppEmptyState displays title, icon, and triggers action', (
+      tester,
+    ) async {
       bool actionTriggered = false;
 
       await tester.pumpWidget(
@@ -106,7 +110,9 @@ void main() {
       expect(actionTriggered, isTrue);
     });
 
-    testWidgets('AppErrorState displays message and retry action', (tester) async {
+    testWidgets('AppErrorState displays message and retry action', (
+      tester,
+    ) async {
       bool retried = false;
 
       await tester.pumpWidget(

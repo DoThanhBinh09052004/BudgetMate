@@ -33,11 +33,19 @@ class NeedsReviewSection extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.assignment_late_outlined, color: AppTheme.warningAmber, size: 20),
+                const Icon(
+                  Icons.assignment_late_outlined,
+                  color: AppTheme.warningAmber,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Cần xác nhận (${needsReviewTransactions.length} giao dịch)',
-                  style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.warningAmber, fontSize: 15),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.warningAmber,
+                    fontSize: 15,
+                  ),
                 ),
               ],
             ),
@@ -54,7 +62,10 @@ class NeedsReviewSection extends StatelessWidget {
 
               return Container(
                 margin: const EdgeInsets.only(top: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: AppTheme.darkSurface,
                   borderRadius: BorderRadius.circular(10),
@@ -65,10 +76,19 @@ class NeedsReviewSection extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(note, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                          Text(
+                            note,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
                           Text(
                             '${format.format(amount)} VND',
-                            style: const TextStyle(color: AppTheme.textMutedDark, fontSize: 12),
+                            style: const TextStyle(
+                              color: AppTheme.textMutedDark,
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       ),

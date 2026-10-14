@@ -48,10 +48,18 @@ void main() {
 
       expect(txId, greaterThan(0));
 
-      final wallet = await db.query(AppTables.wallets, where: 'id = ?', whereArgs: [walletId]);
+      final wallet = await db.query(
+        AppTables.wallets,
+        where: 'id = ?',
+        whereArgs: [walletId],
+      );
       expect(wallet.first['balance'], 800000.0);
 
-      final tx = await db.query(AppTables.transactions, where: 'id = ?', whereArgs: [txId]);
+      final tx = await db.query(
+        AppTables.transactions,
+        where: 'id = ?',
+        whereArgs: [txId],
+      );
       expect(tx.first['amount'], 200000.0);
       expect(tx.first['note'], 'Tiền chợ');
     });
@@ -67,7 +75,11 @@ void main() {
 
       expect(txId, greaterThan(0));
 
-      final wallet = await db.query(AppTables.wallets, where: 'id = ?', whereArgs: [walletId]);
+      final wallet = await db.query(
+        AppTables.wallets,
+        where: 'id = ?',
+        whereArgs: [walletId],
+      );
       expect(wallet.first['balance'], 1500000.0);
     });
 
@@ -89,59 +101,85 @@ void main() {
         newNote: 'Cà phê và bánh',
       );
 
-      final wallet = await db.query(AppTables.wallets, where: 'id = ?', whereArgs: [walletId]);
+      final wallet = await db.query(
+        AppTables.wallets,
+        where: 'id = ?',
+        whereArgs: [walletId],
+      );
       expect(wallet.first['balance'], 850000.0); // 1,000,000 - 150,000
 
-      final tx = await db.query(AppTables.transactions, where: 'id = ?', whereArgs: [txId]);
+      final tx = await db.query(
+        AppTables.transactions,
+        where: 'id = ?',
+        whereArgs: [txId],
+      );
       expect(tx.first['amount'], 150000.0);
       expect(tx.first['note'], 'Cà phê và bánh');
     });
 
-    test('deleteTransaction reverts wallet balance and removes transaction row', () async {
-      final txId = await service.createTransaction(
-        walletId: walletId,
-        categoryId: categoryId,
-        amount: 300000.0,
-        type: 'expense',
-      );
+    test(
+      'deleteTransaction reverts wallet balance and removes transaction row',
+      () async {
+        final txId = await service.createTransaction(
+          walletId: walletId,
+          categoryId: categoryId,
+          amount: 300000.0,
+          type: 'expense',
+        );
 
-      // Verify wallet decreased to 700k
-      var wallet = await db.query(AppTables.wallets, where: 'id = ?', whereArgs: [walletId]);
-      expect(wallet.first['balance'], 700000.0);
+        // Verify wallet decreased to 700k
+        var wallet = await db.query(
+          AppTables.wallets,
+          where: 'id = ?',
+          whereArgs: [walletId],
+        );
+        expect(wallet.first['balance'], 700000.0);
 
-      // Delete
-      await service.deleteTransaction(txId);
+        // Delete
+        await service.deleteTransaction(txId);
 
-      // Verify wallet restored to 1M
-      wallet = await db.query(AppTables.wallets, where: 'id = ?', whereArgs: [walletId]);
-      expect(wallet.first['balance'], 1000000.0);
+        // Verify wallet restored to 1M
+        wallet = await db.query(
+          AppTables.wallets,
+          where: 'id = ?',
+          whereArgs: [walletId],
+        );
+        expect(wallet.first['balance'], 1000000.0);
 
-      final tx = await db.query(AppTables.transactions, where: 'id = ?', whereArgs: [txId]);
-      expect(tx.isEmpty, isTrue);
-    });
+        final tx = await db.query(
+          AppTables.transactions,
+          where: 'id = ?',
+          whereArgs: [txId],
+        );
+        expect(tx.isEmpty, isTrue);
+      },
+    );
 
-    test('getRecentTransactions returns joined category and parent information', () async {
-      final childCatId = await db.insert(AppTables.categories, {
-        'name': 'Trà sữa',
-        'type': 'expense',
-        'icon': 'coffee',
-        'color': '#F97316',
-        'parent_id': categoryId,
-      });
+    test(
+      'getRecentTransactions returns joined category and parent information',
+      () async {
+        final childCatId = await db.insert(AppTables.categories, {
+          'name': 'Trà sữa',
+          'type': 'expense',
+          'icon': 'coffee',
+          'color': '#F97316',
+          'parent_id': categoryId,
+        });
 
-      await service.createTransaction(
-        walletId: walletId,
-        categoryId: childCatId,
-        amount: 50000.0,
-        type: 'expense',
-        note: 'Gong Cha',
-      );
+        await service.createTransaction(
+          walletId: walletId,
+          categoryId: childCatId,
+          amount: 50000.0,
+          type: 'expense',
+          note: 'Gong Cha',
+        );
 
-      final recent = await service.getRecentTransactions(limit: 10);
-      expect(recent.length, 1);
-      expect(recent.first['category_name'], 'Trà sữa');
-      expect(recent.first['parent_name'], 'Ăn uống');
-    });
+        final recent = await service.getRecentTransactions(limit: 10);
+        expect(recent.length, 1);
+        expect(recent.first['category_name'], 'Trà sữa');
+        expect(recent.first['parent_name'], 'Ăn uống');
+      },
+    );
 
     test('confirmTransaction updates needs_review flag to 0', () async {
       final txId = await service.createTransaction(
@@ -153,7 +191,11 @@ void main() {
 
       await service.confirmTransaction(txId);
 
-      final tx = await db.query(AppTables.transactions, where: 'id = ?', whereArgs: [txId]);
+      final tx = await db.query(
+        AppTables.transactions,
+        where: 'id = ?',
+        whereArgs: [txId],
+      );
       expect(tx.first['needs_review'], 0);
     });
   });

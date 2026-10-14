@@ -4,7 +4,9 @@ import 'package:bugdetmate/features/home/screens/home_screen.dart';
 import 'package:bugdetmate/core/theme/app_theme.dart';
 
 void main() {
-  testWidgets('BudgetMateApp smoke test renders home screen', (WidgetTester tester) async {
+  testWidgets('BudgetMateApp smoke test renders home screen', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.darkTheme,

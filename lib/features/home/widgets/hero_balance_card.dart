@@ -42,10 +42,17 @@ class HeroBalanceCard extends StatelessWidget {
               children: [
                 const Text(
                   'Tổng số dư ví',
-                  style: TextStyle(color: AppTheme.textMutedDark, fontSize: 13, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: AppTheme.textMutedDark,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppTheme.successGreen.withAlpha(35),
                     borderRadius: BorderRadius.circular(8),
@@ -53,11 +60,19 @@ class HeroBalanceCard extends StatelessWidget {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle, size: 12, color: AppTheme.successGreen),
+                      Icon(
+                        Icons.check_circle,
+                        size: 12,
+                        color: AppTheme.successGreen,
+                      ),
                       SizedBox(width: 4),
                       Text(
                         'Local-First',
-                        style: TextStyle(color: AppTheme.successGreen, fontSize: 11, fontWeight: FontWeight.w700),
+                        style: TextStyle(
+                          color: AppTheme.successGreen,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ),
@@ -83,7 +98,10 @@ class HeroBalanceCard extends StatelessWidget {
                     children: [
                       const Text(
                         'Khả dụng thực tế',
-                        style: TextStyle(color: AppTheme.textMutedDark, fontSize: 12),
+                        style: TextStyle(
+                          color: AppTheme.textMutedDark,
+                          fontSize: 12,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -91,7 +109,9 @@ class HeroBalanceCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: available >= 0 ? AppTheme.primaryEmerald : AppTheme.dangerRed,
+                          color: available >= 0
+                              ? AppTheme.primaryEmerald
+                              : AppTheme.dangerRed,
                         ),
                       ),
                     ],
@@ -105,11 +125,18 @@ class HeroBalanceCard extends StatelessWidget {
                         children: [
                           const Text(
                             'Tốc độ tiêu',
-                            style: TextStyle(color: AppTheme.textMutedDark, fontSize: 12),
+                            style: TextStyle(
+                              color: AppTheme.textMutedDark,
+                              fontSize: 12,
+                            ),
                           ),
                           if (isWarning) ...[
                             const SizedBox(width: 4),
-                            const Icon(Icons.warning_amber_rounded, size: 14, color: AppTheme.dangerRed),
+                            const Icon(
+                              Icons.warning_amber_rounded,
+                              size: 14,
+                              color: AppTheme.dangerRed,
+                            ),
                           ],
                         ],
                       ),
@@ -130,7 +157,10 @@ class HeroBalanceCard extends StatelessWidget {
             if (isWarning) ...[
               const SizedBox(height: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppTheme.dangerRed.withAlpha(30),
                   borderRadius: BorderRadius.circular(8),
@@ -138,12 +168,20 @@ class HeroBalanceCard extends StatelessWidget {
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.info_outline, size: 14, color: AppTheme.dangerRed),
+                    Icon(
+                      Icons.info_outline,
+                      size: 14,
+                      color: AppTheme.dangerRed,
+                    ),
                     SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         'Cảnh báo: Tốc độ chi tiêu dự kiến vượt ngân sách chu kỳ!',
-                        style: TextStyle(color: AppTheme.dangerRed, fontSize: 11, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          color: AppTheme.dangerRed,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],

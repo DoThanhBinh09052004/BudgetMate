@@ -130,10 +130,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             actions: [
               IconButton(
                 tooltip: 'Cài đặt quyền & Chạy nền',
-                icon: const Icon(Icons.tune_rounded, color: AppTheme.primaryEmerald),
+                icon: const Icon(
+                  Icons.tune_rounded,
+                  color: AppTheme.primaryEmerald,
+                ),
                 onPressed: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const PermissionGuideScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const PermissionGuideScreen(),
+                    ),
                   );
                 },
               ),
@@ -154,7 +159,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               : RefreshIndicator(
                   onRefresh: () => _controller.loadData(forceSync: true),
                   child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     children: [
                       HeroBalanceCard(
                         totalBalance: state.totalBalance,
@@ -163,7 +171,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       const SizedBox(height: 16),
                       if (state.needsReviewTransactions.isNotEmpty) ...[
                         NeedsReviewSection(
-                          needsReviewTransactions: state.needsReviewTransactions,
+                          needsReviewTransactions:
+                              state.needsReviewTransactions,
                           onConfirm: _controller.confirmNeedsReview,
                         ),
                         const SizedBox(height: 16),

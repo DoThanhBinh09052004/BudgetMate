@@ -7,11 +7,7 @@ class AppLoading extends StatelessWidget {
   final String? message;
   final double size;
 
-  const AppLoading({
-    super.key,
-    this.message,
-    this.size = 28,
-  });
+  const AppLoading({super.key, this.message, this.size = 28});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +20,9 @@ class AppLoading extends StatelessWidget {
             width: size,
             child: const CircularProgressIndicator(
               strokeWidth: 2.5,
-              valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryEmerald),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                AppTheme.primaryEmerald,
+              ),
             ),
           ),
           if (message != null) ...[
@@ -136,7 +134,11 @@ class AppErrorState extends StatelessWidget {
             const CircleAvatar(
               radius: 32,
               backgroundColor: Color(0x22F87171),
-              child: Icon(Icons.error_outline_rounded, size: 36, color: AppTheme.expenseRed),
+              child: Icon(
+                Icons.error_outline_rounded,
+                size: 36,
+                color: AppTheme.expenseRed,
+              ),
             ),
             const SizedBox(height: 16),
             Text(

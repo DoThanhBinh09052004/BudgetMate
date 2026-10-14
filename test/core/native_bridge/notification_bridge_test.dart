@@ -12,29 +12,29 @@ void main() {
     log.clear();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel(AppConstants.notificationChannelName),
-      (MethodCall methodCall) async {
-        log.add(methodCall);
-        switch (methodCall.method) {
-          case 'checkNotificationPermission':
-            return true;
-          case 'requestNotificationPermission':
-          case 'rebindService':
-          case 'updateWhitelist':
-            return true;
-          default:
-            return null;
-        }
-      },
-    );
+          const MethodChannel(AppConstants.notificationChannelName),
+          (MethodCall methodCall) async {
+            log.add(methodCall);
+            switch (methodCall.method) {
+              case 'checkNotificationPermission':
+                return true;
+              case 'requestNotificationPermission':
+              case 'rebindService':
+              case 'updateWhitelist':
+                return true;
+              default:
+                return null;
+            }
+          },
+        );
   });
 
   tearDown(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel(AppConstants.notificationChannelName),
-      null,
-    );
+          const MethodChannel(AppConstants.notificationChannelName),
+          null,
+        );
   });
 
   test('checkPermission invokes checkNotificationPermission method', () async {
@@ -44,11 +44,14 @@ void main() {
     expect(log.first.method, 'checkNotificationPermission');
   });
 
-  test('requestPermission invokes requestNotificationPermission method', () async {
-    await NotificationBridge.requestPermission();
-    expect(log.length, 1);
-    expect(log.first.method, 'requestNotificationPermission');
-  });
+  test(
+    'requestPermission invokes requestNotificationPermission method',
+    () async {
+      await NotificationBridge.requestPermission();
+      expect(log.length, 1);
+      expect(log.first.method, 'requestNotificationPermission');
+    },
+  );
 
   test('rebindService invokes rebindService method', () async {
     await NotificationBridge.rebindService();

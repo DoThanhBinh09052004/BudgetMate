@@ -38,7 +38,8 @@ class HomeUiState {
       errorMessage: errorMessage,
       totalBalance: totalBalance ?? this.totalBalance,
       budgetSummary: budgetSummary ?? this.budgetSummary,
-      needsReviewTransactions: needsReviewTransactions ?? this.needsReviewTransactions,
+      needsReviewTransactions:
+          needsReviewTransactions ?? this.needsReviewTransactions,
       recentTransactions: recentTransactions ?? this.recentTransactions,
       groupedTransactions: groupedTransactions ?? this.groupedTransactions,
     );

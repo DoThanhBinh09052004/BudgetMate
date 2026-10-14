@@ -77,12 +77,18 @@ class RecentTransactionsSection extends StatelessWidget {
             children: [
               // Day Header
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 child: Row(
                   children: [
                     Text(
                       DateFormat('dd').format(day),
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     const SizedBox(width: 10),
                     Column(
@@ -90,11 +96,17 @@ class RecentTransactionsSection extends StatelessWidget {
                       children: [
                         Text(
                           _formatWeekday(day),
-                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
                         ),
                         Text(
                           'tháng ${day.month}, ${day.year}',
-                          style: const TextStyle(color: AppTheme.textMutedDark, fontSize: 11),
+                          style: const TextStyle(
+                            color: AppTheme.textMutedDark,
+                            fontSize: 11,
+                          ),
                         ),
                       ],
                     ),
@@ -106,7 +118,9 @@ class RecentTransactionsSection extends StatelessWidget {
                         fontSize: 14,
                         color: dayTotal < 0
                             ? AppTheme.expenseRed
-                            : (dayTotal > 0 ? AppTheme.incomeGreen : AppTheme.textMutedDark),
+                            : (dayTotal > 0
+                                  ? AppTheme.incomeGreen
+                                  : AppTheme.textMutedDark),
                       ),
                     ),
                   ],
@@ -119,14 +133,17 @@ class RecentTransactionsSection extends StatelessWidget {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: dayTxs.length,
-                separatorBuilder: (_, index) => const Divider(color: AppTheme.darkBorder, height: 1),
+                separatorBuilder: (_, index) =>
+                    const Divider(color: AppTheme.darkBorder, height: 1),
                 itemBuilder: (context, index) {
                   final tx = dayTxs[index];
                   final type = tx['type'] as String? ?? 'expense';
                   final amount = (tx['amount'] as num?)?.toDouble() ?? 0.0;
                   final note = tx['note'] as String?;
                   final dateSec = tx['transaction_date'] as int;
-                  final date = DateTime.fromMillisecondsSinceEpoch(dateSec * 1000);
+                  final date = DateTime.fromMillisecondsSinceEpoch(
+                    dateSec * 1000,
+                  );
                   final timeString = DateFormat('HH:mm').format(date);
 
                   final catName = tx['category_name'] as String?;
@@ -138,21 +155,32 @@ class RecentTransactionsSection extends StatelessWidget {
                   final catColor = IconResolver.resolveColor(catColorStr);
 
                   String title;
-                  if (parentName != null && parentName.isNotEmpty && catName != null && catName.isNotEmpty) {
+                  if (parentName != null &&
+                      parentName.isNotEmpty &&
+                      catName != null &&
+                      catName.isNotEmpty) {
                     title = '$parentName › $catName';
                   } else if (catName != null && catName.isNotEmpty) {
                     title = catName;
                   } else {
-                    title = note ?? (type == 'expense' ? 'Chi tiêu' : 'Thu nhập');
+                    title =
+                        note ?? (type == 'expense' ? 'Chi tiêu' : 'Thu nhập');
                   }
 
-                  final subtitle = note != null && note.isNotEmpty ? '$note • $timeString' : timeString;
+                  final subtitle = note != null && note.isNotEmpty
+                      ? '$note • $timeString'
+                      : timeString;
 
                   final isExpense = type == 'expense';
-                  final amountColor = isExpense ? AppTheme.expenseRed : AppTheme.incomeGreen;
+                  final amountColor = isExpense
+                      ? AppTheme.expenseRed
+                      : AppTheme.incomeGreen;
 
                   return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
                     onTap: () => onTapTransaction(tx),
                     leading: CircleAvatar(
                       backgroundColor: catColor.withAlpha(35),
@@ -160,13 +188,19 @@ class RecentTransactionsSection extends StatelessWidget {
                     ),
                     title: Text(
                       title,
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     subtitle: Text(
                       subtitle,
-                      style: const TextStyle(color: AppTheme.textMutedDark, fontSize: 12),
+                      style: const TextStyle(
+                        color: AppTheme.textMutedDark,
+                        fontSize: 12,
+                      ),
                     ),
                     trailing: Text(
                       '${isExpense ? '-' : '+'}${format.format(amount)} VND',

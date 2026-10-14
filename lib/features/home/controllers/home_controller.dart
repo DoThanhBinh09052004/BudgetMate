@@ -86,29 +86,35 @@ class HomeController extends ChangeNotifier {
       // 2. Budget summary
       final now = DateTime.now();
       final cycleMonth = DateFormat('yyyy-MM').format(now);
-      final summary = await budgetService!.getBudgetSummary(cycleMonth: cycleMonth, now: now);
+      final summary = await budgetService!.getBudgetSummary(
+        cycleMonth: cycleMonth,
+        now: now,
+      );
 
       // 3. Needs review
-      final needsReview = await transactionService!.getNeedsReviewTransactions(limit: 5);
+      final needsReview = await transactionService!.getNeedsReviewTransactions(
+        limit: 5,
+      );
 
       // 4. Recent transactions
       final recent = await transactionService!.getRecentTransactions(limit: 40);
       final grouped = groupTransactionsByDate(recent);
 
-      _updateState(HomeUiState(
-        isLoading: false,
-        isSyncing: false,
-        totalBalance: totalBalance,
-        budgetSummary: summary,
-        needsReviewTransactions: needsReview,
-        recentTransactions: recent,
-        groupedTransactions: grouped,
-      ));
+      _updateState(
+        HomeUiState(
+          isLoading: false,
+          isSyncing: false,
+          totalBalance: totalBalance,
+          budgetSummary: summary,
+          needsReviewTransactions: needsReview,
+          recentTransactions: recent,
+          groupedTransactions: grouped,
+        ),
+      );
     } catch (e) {
-      _updateState(_state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString(),
-      ));
+      _updateState(
+        _state.copyWith(isLoading: false, errorMessage: e.toString()),
+      );
     } finally {
       _isFetching = false;
     }

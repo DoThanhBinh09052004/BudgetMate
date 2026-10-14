@@ -45,7 +45,7 @@ void main() {
           'type': 'expense',
           'transaction_date': nowSec,
           'category_name': 'Ăn trưa',
-        }
+        },
       ];
 
       final controller = HomeController(

@@ -15,14 +15,19 @@ void main() {
     // 1. Kiểm tra seed data mặc định đã có danh mục cha và danh mục con
     final allCategories = await db.query(AppTables.categories);
     final parents = allCategories.where((c) => c['parent_id'] == null).toList();
-    final children = allCategories.where((c) => c['parent_id'] != null).toList();
+    final children = allCategories
+        .where((c) => c['parent_id'] != null)
+        .toList();
 
     expect(parents.isNotEmpty, true, reason: 'Phải có danh mục cha mặc định');
     expect(children.isNotEmpty, true, reason: 'Phải có danh mục con mặc định');
 
     // Kiểm tra danh mục Ăn uống có các con: Cơm trưa / tối, Trà sữa & Cà phê...
     final foodParent = parents.firstWhere((c) => c['name'] == 'Ăn uống');
-    final foodChildren = children.where((c) => c['parent_id'] == foodParent['id']).map((c) => c['name'] as String).toList();
+    final foodChildren = children
+        .where((c) => c['parent_id'] == foodParent['id'])
+        .map((c) => c['name'] as String)
+        .toList();
     expect(foodChildren, contains('Cơm trưa / tối'));
     expect(foodChildren, contains('Trà sữa & Cà phê'));
 
