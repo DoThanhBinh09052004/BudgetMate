@@ -71,47 +71,76 @@ class DatabaseHelper {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Migration scripts go here, executed sequentially.
-    // Each migration block handles upgrading from one version to the next.
-    //
-    // Example for future migrations:
-    // if (oldVersion < 2) {
-    //   await db.execute('ALTER TABLE wallets ADD COLUMN bank_code TEXT;');
-    // }
-    // if (oldVersion < 3) { ... }
+    if (oldVersion < 2) {
+      await db.execute(
+        'ALTER TABLE ${AppTables.categories} ADD COLUMN parent_id INTEGER REFERENCES ${AppTables.categories}(id) ON DELETE CASCADE;',
+      );
+    }
   }
 
   Future<void> _seedDefaults(Database db) async {
-    final seedBatch = db.batch();
-
     // Default Wallets
+    final walletBatch = db.batch();
     for (final wallet in SeedData.defaultWallets) {
-      seedBatch.insert(AppTables.wallets, wallet);
+      walletBatch.insert(AppTables.wallets, wallet);
     }
+    await walletBatch.commit(noResult: true);
 
-    // Default Expense Categories
+    // Default Expense Categories (Cha & Con)
     for (final cat in SeedData.defaultExpenseCategories) {
-      seedBatch.insert(AppTables.categories, {
+      final parentId = await db.insert(AppTables.categories, {
         'name': cat['name'],
         'type': 'expense',
         'icon': cat['icon'],
         'color': cat['color'],
+        'parent_id': null,
         'is_default': 1,
       });
+
+      final children = (cat['children'] as List<dynamic>?) ?? [];
+      if (children.isNotEmpty) {
+        final childBatch = db.batch();
+        for (final child in children) {
+          childBatch.insert(AppTables.categories, {
+            'name': child['name'],
+            'type': 'expense',
+            'icon': child['icon'],
+            'color': cat['color'],
+            'parent_id': parentId,
+            'is_default': 1,
+          });
+        }
+        await childBatch.commit(noResult: true);
+      }
     }
 
-    // Default Income Categories
+    // Default Income Categories (Cha & Con)
     for (final cat in SeedData.defaultIncomeCategories) {
-      seedBatch.insert(AppTables.categories, {
+      final parentId = await db.insert(AppTables.categories, {
         'name': cat['name'],
         'type': 'income',
         'icon': cat['icon'],
         'color': cat['color'],
+        'parent_id': null,
         'is_default': 1,
       });
-    }
 
-    await seedBatch.commit(noResult: true);
+      final children = (cat['children'] as List<dynamic>?) ?? [];
+      if (children.isNotEmpty) {
+        final childBatch = db.batch();
+        for (final child in children) {
+          childBatch.insert(AppTables.categories, {
+            'name': child['name'],
+            'type': 'income',
+            'icon': child['icon'],
+            'color': cat['color'],
+            'parent_id': parentId,
+            'is_default': 1,
+          });
+        }
+        await childBatch.commit(noResult: true);
+      }
+    }
   }
 
   Future<void> close() async {

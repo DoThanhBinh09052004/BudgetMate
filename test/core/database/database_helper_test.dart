@@ -115,10 +115,13 @@ void main() {
     final wallets = await db.query('wallets');
     expect(wallets.length, SeedData.defaultWallets.length);
 
-    final categories = await db.query('categories');
-    final expectedCount =
+    final rootCategories = await db.query('categories', where: 'parent_id IS NULL');
+    final expectedRootCount =
         SeedData.defaultExpenseCategories.length + SeedData.defaultIncomeCategories.length;
-    expect(categories.length, expectedCount);
+    expect(rootCategories.length, expectedRootCount);
+
+    final allCategories = await db.query('categories');
+    expect(allCategories.length, greaterThan(expectedRootCount));
 
     await db.close();
   });
