@@ -6,6 +6,8 @@ import 'package:bugdetmate/core/theme/app_theme.dart';
 import 'package:bugdetmate/features/budget/services/budget_service.dart';
 import 'package:bugdetmate/features/budget/models/recurring_payment_model.dart';
 import 'package:bugdetmate/features/transactions/screens/quick_add_sheet.dart';
+import 'package:bugdetmate/features/transactions/screens/edit_transaction_sheet.dart';
+import 'package:bugdetmate/core/theme/icon_resolver.dart';
 import 'package:bugdetmate/features/settings/screens/miui_guide_screen.dart';
 
 import 'package:bugdetmate/core/widgets/app_logo.dart';
@@ -108,12 +110,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         limit: 5,
       );
 
-      // 4. Recent transactions
-      final recent = await db.query(
-        AppTables.transactions,
-        orderBy: 'transaction_date DESC',
-        limit: 20,
-      );
+      // 4. Recent transactions với tên danh mục, icon, màu sắc và danh mục cha
+      final recent = await db.rawQuery('''
+        SELECT 
+          t.*,
+          c.name AS category_name,
+          c.icon AS category_icon,
+          c.color AS category_color,
+          p.name AS parent_name
+        FROM ${AppTables.transactions} t
+        LEFT JOIN ${AppTables.categories} c ON t.category_id = c.id
+        LEFT JOIN ${AppTables.categories} p ON c.parent_id = p.id
+        ORDER BY t.transaction_date DESC
+        LIMIT 40
+      ''');
 
       setState(() {
         _totalBalance = totalBalance;
@@ -136,6 +146,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (_) => QuickAddSheet(onSaved: _loadData, db: widget.db),
+    );
+  }
+
+  void _openEditTransaction(Map<String, dynamic> tx) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.darkSurface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => EditTransactionSheet(
+        transaction: tx,
+        onSaved: _loadData,
+        db: widget.db,
+      ),
     );
   }
 
@@ -247,6 +273,27 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         ),
       ),
     );
+  }
+
+  String _formatWeekday(DateTime day) {
+    switch (day.weekday) {
+      case DateTime.monday:
+        return 'Thứ Hai';
+      case DateTime.tuesday:
+        return 'Thứ Ba';
+      case DateTime.wednesday:
+        return 'Thứ Tư';
+      case DateTime.thursday:
+        return 'Thứ Năm';
+      case DateTime.friday:
+        return 'Thứ Sáu';
+      case DateTime.saturday:
+        return 'Thứ Bảy';
+      case DateTime.sunday:
+        return 'Chủ Nhật';
+      default:
+        return '';
+    }
   }
 
   @override
@@ -558,59 +605,139 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
 
-    return Card(
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: _recentTransactions.length,
-        separatorBuilder: (_, index) => const Divider(color: AppTheme.darkBorder, height: 1),
-        itemBuilder: (context, index) {
-          final tx = _recentTransactions[index];
-          final type = tx['type'] as String;
+    // Gom nhóm giao dịch theo từng ngày (Date Grouping)
+    final Map<DateTime, List<Map<String, dynamic>>> grouped = {};
+    for (final tx in _recentTransactions) {
+      final dateSec = tx['transaction_date'] as int;
+      final d = DateTime.fromMillisecondsSinceEpoch(dateSec * 1000);
+      final dayKey = DateTime(d.year, d.month, d.day);
+      grouped.putIfAbsent(dayKey, () => []).add(tx);
+    }
+
+    final sortedDays = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
+
+    return Column(
+      children: sortedDays.map((day) {
+        final dayTxs = grouped[day]!;
+        double dayTotal = 0;
+        for (final tx in dayTxs) {
           final amount = (tx['amount'] as num).toDouble();
-          final note = tx['note'] as String? ?? (type == 'expense' ? 'Chi tiêu' : 'Thu nhập');
-          final dateSec = tx['transaction_date'] as int;
-          final date = DateTime.fromMillisecondsSinceEpoch(dateSec * 1000);
-          final dateString = DateFormat('dd/MM HH:mm').format(date);
+          final type = tx['type'] as String;
+          dayTotal += (type == 'expense' ? -amount : amount);
+        }
 
-          final isExpense = type == 'expense';
-          final color = isExpense
-              ? AppTheme.dangerRed
-              : (type == 'income' ? AppTheme.successGreen : AppTheme.purpleAccent);
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          child: Column(
+            children: [
+              // Day Header
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    Text(
+                      DateFormat('dd').format(day),
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _formatWeekday(day),
+                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                        ),
+                        Text(
+                          'tháng ${day.month}, ${day.year}',
+                          style: const TextStyle(color: AppTheme.textMutedDark, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    Text(
+                      '${dayTotal < 0 ? '-' : (dayTotal > 0 ? '+' : '')}${_currencyFormat.format(dayTotal.abs().toInt())} đ',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: dayTotal < 0
+                            ? AppTheme.expenseRed
+                            : (dayTotal > 0 ? AppTheme.incomeGreen : AppTheme.textMutedDark),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(color: AppTheme.darkBorder, height: 1),
 
-          return ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            leading: CircleAvatar(
-              backgroundColor: color.withAlpha(35),
-              child: Icon(
-                isExpense
-                    ? Icons.arrow_upward_rounded
-                    : (type == 'income' ? Icons.arrow_downward_rounded : Icons.swap_horiz_rounded),
-                color: color,
-                size: 20,
+              // Transaction items of this day
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: dayTxs.length,
+                separatorBuilder: (_, index) => const Divider(color: AppTheme.darkBorder, height: 1),
+                itemBuilder: (context, index) {
+                  final tx = dayTxs[index];
+                  final type = tx['type'] as String;
+                  final amount = (tx['amount'] as num).toDouble();
+                  final note = tx['note'] as String?;
+                  final dateSec = tx['transaction_date'] as int;
+                  final date = DateTime.fromMillisecondsSinceEpoch(dateSec * 1000);
+                  final timeString = DateFormat('HH:mm').format(date);
+
+                  final catName = tx['category_name'] as String?;
+                  final parentName = tx['parent_name'] as String?;
+                  final catIconStr = tx['category_icon'] as String?;
+                  final catColorStr = tx['category_color'] as String?;
+
+                  final catIcon = IconResolver.resolve(catIconStr);
+                  final catColor = IconResolver.resolveColor(catColorStr);
+
+                  String title;
+                  if (parentName != null && parentName.isNotEmpty && catName != null && catName.isNotEmpty) {
+                    title = '$parentName › $catName';
+                  } else if (catName != null && catName.isNotEmpty) {
+                    title = catName;
+                  } else {
+                    title = note ?? (type == 'expense' ? 'Chi tiêu' : 'Thu nhập');
+                  }
+
+                  final subtitle = note != null && note.isNotEmpty ? '$note • $timeString' : timeString;
+
+                  final isExpense = type == 'expense';
+                  final amountColor = isExpense ? AppTheme.expenseRed : AppTheme.incomeGreen;
+
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    onTap: () => _openEditTransaction(tx),
+                    leading: CircleAvatar(
+                      backgroundColor: catColor.withAlpha(35),
+                      child: Icon(catIcon, color: catColor, size: 18),
+                    ),
+                    title: Text(
+                      title,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text(
+                      subtitle,
+                      style: const TextStyle(color: AppTheme.textMutedDark, fontSize: 12),
+                    ),
+                    trailing: Text(
+                      '${isExpense ? '-' : '+'}${_currencyFormat.format(amount)} VND',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: amountColor,
+                      ),
+                    ),
+                  );
+                },
               ),
-            ),
-            title: Text(
-              note,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: Text(
-              dateString,
-              style: const TextStyle(color: AppTheme.textMutedDark, fontSize: 12),
-            ),
-            trailing: Text(
-              '${isExpense ? '-' : '+'}${_currencyFormat.format(amount)} VND',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-                color: color,
-              ),
-            ),
-          );
-        },
-      ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 }
