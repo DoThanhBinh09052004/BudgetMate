@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:bugdetmate/core/database/database_helper.dart';
-import 'package:bugdetmate/core/database/tables.dart';
 import 'package:bugdetmate/core/theme/app_theme.dart';
 import 'package:bugdetmate/core/theme/icon_resolver.dart';
+import 'package:bugdetmate/core/widgets/app_widgets.dart';
+import 'package:bugdetmate/features/transactions/services/transaction_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// Bottom Sheet nhập thủ công 3 chạm với Numpad lớn, Cascade Chips 2 tầng và phím tắt tiền mặt phổ biến.
@@ -46,8 +47,12 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
     if (widget.initialWallets != null || widget.initialCategories != null) {
       _wallets = widget.initialWallets ?? [];
       final allCats = widget.initialCategories ?? [];
-      _parentCategories = allCats.where((c) => c['parent_id'] == null && c['type'] == _type).toList();
-      final defaultParent = _parentCategories.isNotEmpty ? _parentCategories.first['id'] as int : null;
+      _parentCategories = allCats
+          .where((c) => c['parent_id'] == null && c['type'] == _type)
+          .toList();
+      final defaultParent = _parentCategories.isNotEmpty
+          ? _parentCategories.first['id'] as int
+          : null;
       _selectedParentId = defaultParent;
       _selectedCategoryId = defaultParent;
       _childCategories = defaultParent != null
@@ -70,21 +75,16 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
 
   Future<void> _loadMetadata() async {
     final db = widget.db ?? await DatabaseHelper.instance.database;
-    final wallets = await db.query(AppTables.wallets);
-    final parents = await db.query(
-      AppTables.categories,
-      where: 'type = ? AND parent_id IS NULL',
-      whereArgs: [_type],
-    );
+    final service = TransactionService(db: db);
+    final wallets = await service.getWallets();
+    final parents = await service.getCategories(type: _type, parentId: null);
 
-    int? defaultParentId = parents.isNotEmpty ? parents.first['id'] as int : null;
+    int? defaultParentId = parents.isNotEmpty
+        ? parents.first['id'] as int
+        : null;
     List<Map<String, dynamic>> children = [];
     if (defaultParentId != null) {
-      children = await db.query(
-        AppTables.categories,
-        where: 'parent_id = ?',
-        whereArgs: [defaultParentId],
-      );
+      children = await service.getCategories(parentId: defaultParentId);
     }
 
     if (mounted) {
@@ -111,8 +111,12 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
 
     if (widget.initialCategories != null) {
       final allCats = widget.initialCategories!;
-      final parents = allCats.where((c) => c['parent_id'] == null && c['type'] == _type).toList();
-      final defaultParentId = parents.isNotEmpty ? parents.first['id'] as int : null;
+      final parents = allCats
+          .where((c) => c['parent_id'] == null && c['type'] == _type)
+          .toList();
+      final defaultParentId = parents.isNotEmpty
+          ? parents.first['id'] as int
+          : null;
       final children = defaultParentId != null
           ? allCats.where((c) => c['parent_id'] == defaultParentId).toList()
           : <Map<String, dynamic>>[];
@@ -127,20 +131,15 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
     }
 
     final db = widget.db ?? await DatabaseHelper.instance.database;
-    final parents = await db.query(
-      AppTables.categories,
-      where: 'type = ? AND parent_id IS NULL',
-      whereArgs: [_type],
-    );
+    final service = TransactionService(db: db);
+    final parents = await service.getCategories(type: _type, parentId: null);
 
-    int? defaultParentId = parents.isNotEmpty ? parents.first['id'] as int : null;
+    int? defaultParentId = parents.isNotEmpty
+        ? parents.first['id'] as int
+        : null;
     List<Map<String, dynamic>> children = [];
     if (defaultParentId != null) {
-      children = await db.query(
-        AppTables.categories,
-        where: 'parent_id = ?',
-        whereArgs: [defaultParentId],
-      );
+      children = await service.getCategories(parentId: defaultParentId);
     }
 
     setState(() {
@@ -154,7 +153,9 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
 
   Future<void> _selectParentCategory(int parentId) async {
     if (widget.initialCategories != null) {
-      final children = widget.initialCategories!.where((c) => c['parent_id'] == parentId).toList();
+      final children = widget.initialCategories!
+          .where((c) => c['parent_id'] == parentId)
+          .toList();
       setState(() {
         _selectedParentId = parentId;
         _childCategories = children;
@@ -164,11 +165,8 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
     }
 
     final db = widget.db ?? await DatabaseHelper.instance.database;
-    final children = await db.query(
-      AppTables.categories,
-      where: 'parent_id = ?',
-      whereArgs: [parentId],
-    );
+    final service = TransactionService(db: db);
+    final children = await service.getCategories(parentId: parentId);
 
     setState(() {
       _selectedParentId = parentId;
@@ -231,7 +229,9 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
       'amount': amount,
       'type': _type,
       'transaction_date': now,
-      'note': _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+      'note': _noteController.text.trim().isEmpty
+          ? null
+          : _noteController.text.trim(),
       'source': 'manual',
       'needs_review': 0,
     };
@@ -240,15 +240,19 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
       await widget.onSaveTransaction!(txData);
     } else {
       final db = widget.db ?? await DatabaseHelper.instance.database;
-      await db.insert(AppTables.transactions, txData);
-
-      // Update wallet balance
-      final balanceChange = _type == 'expense' ? -amount : amount;
-      await db.rawUpdate('''
-        UPDATE ${AppTables.wallets}
-        SET balance = balance + ?
-        WHERE id = ?
-      ''', [balanceChange, _selectedWalletId]);
+      final service = TransactionService(db: db);
+      await service.createTransaction(
+        walletId: _selectedWalletId!,
+        categoryId: _selectedCategoryId,
+        amount: amount,
+        type: _type,
+        note: _noteController.text.trim().isEmpty
+            ? null
+            : _noteController.text.trim(),
+        transactionDate: now,
+        source: 'manual',
+        needsReview: 0,
+      );
     }
 
     widget.onSaved();
@@ -309,7 +313,9 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.w800,
-                    color: _type == 'expense' ? AppTheme.expenseRed : AppTheme.primaryGreen,
+                    color: _type == 'expense'
+                        ? AppTheme.expenseRed
+                        : AppTheme.primaryGreen,
                   ),
                 ),
                 const SizedBox(width: 6),
@@ -356,10 +362,16 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
                   final cat = _parentCategories[index];
                   final isSelected = cat['id'] == _selectedParentId;
                   final icon = IconResolver.resolve(cat['icon'] as String?);
-                  final color = IconResolver.resolveColor(cat['color'] as String?);
+                  final color = IconResolver.resolveColor(
+                    cat['color'] as String?,
+                  );
 
                   return ChoiceChip(
-                    avatar: Icon(icon, size: 16, color: isSelected ? Colors.white : color),
+                    avatar: Icon(
+                      icon,
+                      size: 16,
+                      color: isSelected ? Colors.white : color,
+                    ),
                     label: Text(cat['name'] as String),
                     selected: isSelected,
                     onSelected: (_) => _selectParentCategory(cat['id'] as int),
@@ -367,7 +379,9 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
                     backgroundColor: AppTheme.darkSurfaceVariant,
                     labelStyle: TextStyle(
                       color: isSelected ? Colors.white : AppTheme.textMutedDark,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
                     ),
                   );
                 },
@@ -385,27 +399,46 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
                   itemBuilder: (context, index) {
                     final child = _childCategories[index];
                     final isChildSelected = child['id'] == _selectedCategoryId;
-                    final childIcon = IconResolver.resolve(child['icon'] as String?);
+                    final childIcon = IconResolver.resolve(
+                      child['icon'] as String?,
+                    );
 
                     return FilterChip(
-                      avatar: Icon(childIcon, size: 14, color: isChildSelected ? Colors.white : AppTheme.textMutedDark),
-                      label: Text(child['name'] as String, style: const TextStyle(fontSize: 12)),
+                      avatar: Icon(
+                        childIcon,
+                        size: 14,
+                        color: isChildSelected
+                            ? Colors.white
+                            : AppTheme.textMutedDark,
+                      ),
+                      label: Text(
+                        child['name'] as String,
+                        style: const TextStyle(fontSize: 12),
+                      ),
                       selected: isChildSelected,
                       onSelected: (_) {
                         setState(() {
-                          _selectedCategoryId = isChildSelected ? _selectedParentId : child['id'] as int;
+                          _selectedCategoryId = isChildSelected
+                              ? _selectedParentId
+                              : child['id'] as int;
                         });
                       },
                       selectedColor: AppTheme.primaryGreen,
                       backgroundColor: AppTheme.darkBackground,
                       labelStyle: TextStyle(
-                        color: isChildSelected ? Colors.white : AppTheme.textMutedDark,
-                        fontWeight: isChildSelected ? FontWeight.w700 : FontWeight.w400,
+                        color: isChildSelected
+                            ? Colors.white
+                            : AppTheme.textMutedDark,
+                        fontWeight: isChildSelected
+                            ? FontWeight.w700
+                            : FontWeight.w400,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                         side: BorderSide(
-                          color: isChildSelected ? AppTheme.primaryGreen : AppTheme.darkBorder,
+                          color: isChildSelected
+                              ? AppTheme.primaryGreen
+                              : AppTheme.darkBorder,
                           width: 1,
                         ),
                       ),
@@ -422,10 +455,16 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
             controller: _noteController,
             decoration: InputDecoration(
               hintText: 'Ghi chú (Highlands, Ăn trưa...)',
-              hintStyle: const TextStyle(color: AppTheme.textMutedDark, fontSize: 13),
+              hintStyle: const TextStyle(
+                color: AppTheme.textMutedDark,
+                fontSize: 13,
+              ),
               filled: true,
               fillColor: AppTheme.darkSurfaceVariant,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 10,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: AppTheme.darkBorder),
@@ -443,20 +482,12 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
           const SizedBox(height: 12),
 
           // Submit CTA
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _type == 'expense' ? const Color(0xFF3B82F6) : AppTheme.primaryGreen,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
+          AppPrimaryButton(
+            label: 'Lưu Giao Dịch',
+            backgroundColor: _type == 'expense'
+                ? const Color(0xFF3B82F6)
+                : AppTheme.primaryGreen,
             onPressed: _saveTransaction,
-            child: const Text(
-              'Lưu Giao Dịch',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
           ),
         ],
       ),
@@ -501,12 +532,18 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           side: const BorderSide(color: AppTheme.darkBorder),
           backgroundColor: AppTheme.darkSurfaceVariant,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
         onPressed: () => _addQuickAmount(amount),
         child: Text(
           label,
-          style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
@@ -542,7 +579,10 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
                     onPressed: () => _onKeyPress(key),
                     child: Text(
                       key,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),

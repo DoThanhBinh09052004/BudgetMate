@@ -20,7 +20,8 @@ class TransactionService {
     int? rawNotificationId,
   }) async {
     return await db.transaction((txn) async {
-      final date = transactionDate ?? (DateTime.now().millisecondsSinceEpoch ~/ 1000);
+      final date =
+          transactionDate ?? (DateTime.now().millisecondsSinceEpoch ~/ 1000);
 
       final txId = await txn.insert(AppTables.transactions, {
         'wallet_id': walletId,
@@ -149,12 +150,16 @@ class TransactionService {
 
   /// Lấy tổng số dư tất cả các ví.
   Future<double> getTotalBalance() async {
-    final rows = await db.rawQuery('SELECT SUM(balance) as total FROM ${AppTables.wallets}');
+    final rows = await db.rawQuery(
+      'SELECT SUM(balance) as total FROM ${AppTables.wallets}',
+    );
     return (rows.first['total'] as num?)?.toDouble() ?? 0.0;
   }
 
   /// Lấy các giao dịch cần xác nhận.
-  Future<List<Map<String, dynamic>>> getNeedsReviewTransactions({int limit = 5}) async {
+  Future<List<Map<String, dynamic>>> getNeedsReviewTransactions({
+    int limit = 5,
+  }) async {
     return await db.query(
       AppTables.transactions,
       where: 'needs_review = ?',
@@ -165,8 +170,11 @@ class TransactionService {
   }
 
   /// Lấy danh sách giao dịch gần đây đã JOIN với danh mục và danh mục cha.
-  Future<List<Map<String, dynamic>>> getRecentTransactions({int limit = 40}) async {
-    return await db.rawQuery('''
+  Future<List<Map<String, dynamic>>> getRecentTransactions({
+    int limit = 40,
+  }) async {
+    return await db.rawQuery(
+      '''
       SELECT 
         t.*,
         c.name AS category_name,
@@ -178,11 +186,16 @@ class TransactionService {
       LEFT JOIN ${AppTables.categories} p ON c.parent_id = p.id
       ORDER BY t.transaction_date DESC
       LIMIT ?
-    ''', [limit]);
+    ''',
+      [limit],
+    );
   }
 
   /// Lấy danh sách danh mục theo loại hoặc theo parent_id.
-  Future<List<Map<String, dynamic>>> getCategories({String? type, int? parentId}) async {
+  Future<List<Map<String, dynamic>>> getCategories({
+    String? type,
+    int? parentId,
+  }) async {
     String? whereClause;
     List<dynamic>? whereArgs;
 

@@ -13,13 +13,8 @@ void main() {
         bankId: 'tcb',
         packageName: 'com.techcombank.mobile',
         displayName: 'Techcombank',
-        amountPatterns: [
-          r'[+-]?([\d.,]+)\s*(?:VND|đ)',
-        ],
-        typeIndicators: const TypeIndicators(
-          expense: ['-'],
-          income: ['+'],
-        ),
+        amountPatterns: [r'[+-]?([\d.,]+)\s*(?:VND|đ)'],
+        typeIndicators: const TypeIndicators(expense: ['-'], income: ['+']),
         notePattern: r'ND:\s*(.+?)(?:\.\s*SD:|$)',
         accountPattern: r'TK\s*(\d{4})',
       ),
@@ -27,13 +22,8 @@ void main() {
         bankId: 'vcb',
         packageName: 'com.VCB',
         displayName: 'Vietcombank',
-        amountPatterns: [
-          r'[+-]?([\d.,]+)\s*(?:VND|đ)',
-        ],
-        typeIndicators: const TypeIndicators(
-          expense: ['-'],
-          income: ['+'],
-        ),
+        amountPatterns: [r'[+-]?([\d.,]+)\s*(?:VND|đ)'],
+        typeIndicators: const TypeIndicators(expense: ['-'], income: ['+']),
         notePattern: r'Ref:\s*(.+?)(?:\.\s*SD:|$)',
         accountPattern: r'TK\s*(\d{4})',
       ),
@@ -44,13 +34,19 @@ void main() {
   test('Parse Techcombank expense notification correctly', () {
     const rawText =
         'TK 1903xxx890: -50,000 VND luc 12/10/2026 14:30. ND: Highlands Coffee. SD: 12,500,000 VND';
-    final result = parser.parse(packageName: 'com.techcombank.mobile', text: rawText);
+    final result = parser.parse(
+      packageName: 'com.techcombank.mobile',
+      text: rawText,
+    );
 
     expect(result, isNotNull);
     expect(result!.amount, 50000.0);
     expect(result.type, 'expense');
     expect(result.note.toLowerCase(), contains('highlands'));
-    expect(result.confidenceScore, greaterThanOrEqualTo(AppConstants.minConfidenceScore));
+    expect(
+      result.confidenceScore,
+      greaterThanOrEqualTo(AppConstants.minConfidenceScore),
+    );
   });
 
   test('Parse Vietcombank income notification correctly', () {
@@ -69,9 +65,7 @@ void main() {
       bankId: 'sacombank',
       packageName: 'com.sacombank.ewallet',
       displayName: 'Sacombank',
-      amountPatterns: [
-        r'PS:\s*[+-]?([\d.,]+)\s*(?:VND|đ|d)',
-      ],
+      amountPatterns: [r'PS:\s*[+-]?([\d.,]+)\s*(?:VND|đ|d)'],
       typeIndicators: const TypeIndicators(
         expense: ['-', 'PS: -'],
         income: ['+', 'PS: +'],
@@ -104,7 +98,10 @@ void main() {
 
   test('Low confidence score when note cannot be extracted', () {
     const rawText = 'TK 1903: -50,000 VND';
-    final result = parser.parse(packageName: 'com.techcombank.mobile', text: rawText);
+    final result = parser.parse(
+      packageName: 'com.techcombank.mobile',
+      text: rawText,
+    );
 
     // May parse amount but note is missing → lower confidence
     if (result != null) {
@@ -117,9 +114,7 @@ void main() {
       bankId: 'sacombank',
       packageName: 'com.sacombank.ewallet',
       displayName: 'Sacombank',
-      amountPatterns: [
-        r'PS:\s*[+-]?([\d.,]+)\s*(?:VND|đ|d)',
-      ],
+      amountPatterns: [r'PS:\s*[+-]?([\d.,]+)\s*(?:VND|đ|d)'],
       typeIndicators: const TypeIndicators(
         expense: ['-', 'PS: -'],
         income: ['+', 'PS: +'],
@@ -146,12 +141,15 @@ void main() {
     expect(result.accountSuffix, '0123456789');
   });
 
-  test('getPackageNames returns all configured bank packages plus SMS apps', () {
-    final packages = parser.getPackageNames();
-    expect(packages, contains('com.techcombank.mobile'));
-    expect(packages, contains('com.VCB'));
-    expect(packages, contains('com.google.android.apps.messaging'));
-    expect(packages, contains('com.android.mms'));
-    expect(packages.length, 5);
-  });
+  test(
+    'getPackageNames returns all configured bank packages plus SMS apps',
+    () {
+      final packages = parser.getPackageNames();
+      expect(packages, contains('com.techcombank.mobile'));
+      expect(packages, contains('com.VCB'));
+      expect(packages, contains('com.google.android.apps.messaging'));
+      expect(packages, contains('com.android.mms'));
+      expect(packages.length, 5);
+    },
+  );
 }
