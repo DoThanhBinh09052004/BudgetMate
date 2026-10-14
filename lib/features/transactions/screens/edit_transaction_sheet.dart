@@ -105,7 +105,6 @@ class _EditTransactionSheetState extends State<EditTransactionSheet> {
   int? _selectedParentId;
   int? _selectedCategoryId;
 
-  List<Map<String, dynamic>> _wallets = [];
   List<Map<String, dynamic>> _parentCategories = [];
   List<Map<String, dynamic>> _childCategories = [];
   bool _isLoading = true;
@@ -173,7 +172,6 @@ class _EditTransactionSheetState extends State<EditTransactionSheet> {
 
     if (mounted) {
       setState(() {
-        _wallets = wallets;
         _parentCategories = parents;
         _childCategories = children;
         _selectedParentId = parentId;

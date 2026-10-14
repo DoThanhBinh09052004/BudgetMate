@@ -1,8 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bugdetmate/core/database/database_helper.dart';
 import 'package:bugdetmate/core/database/tables.dart';
-import 'package:bugdetmate/core/theme/app_theme.dart';
 import 'package:bugdetmate/features/transactions/screens/edit_transaction_sheet.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
