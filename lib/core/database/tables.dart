@@ -8,7 +8,8 @@ class AppTables {
   static const String recurringRules = 'recurring_rules';
   static const String recurringPayments = 'recurring_payments';
 
-  static const String createWallets = '''
+  static const String createWallets =
+      '''
     CREATE TABLE $wallets (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -21,7 +22,8 @@ class AppTables {
     );
   ''';
 
-  static const String createCategories = '''
+  static const String createCategories =
+      '''
     CREATE TABLE $categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -35,7 +37,8 @@ class AppTables {
     );
   ''';
 
-  static const String createRawNotifications = '''
+  static const String createRawNotifications =
+      '''
     CREATE TABLE $rawNotifications (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       package_name TEXT NOT NULL,
@@ -47,7 +50,8 @@ class AppTables {
     );
   ''';
 
-  static const String createTransactions = '''
+  static const String createTransactions =
+      '''
     CREATE TABLE $transactions (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       wallet_id INTEGER NOT NULL,
@@ -67,7 +71,8 @@ class AppTables {
     );
   ''';
 
-  static const String createUserCategoryRules = '''
+  static const String createUserCategoryRules =
+      '''
     CREATE TABLE $userCategoryRules (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       keyword TEXT NOT NULL UNIQUE,
@@ -76,7 +81,8 @@ class AppTables {
     );
   ''';
 
-  static const String createBudgets = '''
+  static const String createBudgets =
+      '''
     CREATE TABLE $budgets (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       category_id INTEGER,
@@ -86,7 +92,8 @@ class AppTables {
     );
   ''';
 
-  static const String createRecurringRules = '''
+  static const String createRecurringRules =
+      '''
     CREATE TABLE $recurringRules (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
@@ -100,7 +107,8 @@ class AppTables {
     );
   ''';
 
-  static const String createRecurringPayments = '''
+  static const String createRecurringPayments =
+      '''
     CREATE TABLE $recurringPayments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       rule_id INTEGER NOT NULL,
@@ -116,22 +124,26 @@ class AppTables {
   // ── Performance Indexes ──
 
   /// Tối ưu cho Dedup Layer 2 query
-  static const String createIndexTransactionsDedup = '''
+  static const String createIndexTransactionsDedup =
+      '''
     CREATE INDEX idx_transactions_dedup ON $transactions(wallet_id, amount, transaction_date);
   ''';
 
   /// Tối ưu cho truy vấn giao dịch theo ví và thời gian
-  static const String createIndexTransactionsWalletDate = '''
+  static const String createIndexTransactionsWalletDate =
+      '''
     CREATE INDEX idx_transactions_wallet_date ON $transactions(wallet_id, transaction_date);
   ''';
 
   /// Partial index: chỉ index các bản ghi chưa xử lý
-  static const String createIndexRawNotificationsUnprocessed = '''
+  static const String createIndexRawNotificationsUnprocessed =
+      '''
     CREATE INDEX idx_raw_notifications_unprocessed ON $rawNotifications(is_processed) WHERE is_processed = 0;
   ''';
 
   /// Tối ưu cho truy vấn recurring payments theo chu kỳ
-  static const String createIndexRecurringPaymentsCycle = '''
+  static const String createIndexRecurringPaymentsCycle =
+      '''
     CREATE INDEX idx_recurring_payments_cycle ON $recurringPayments(rule_id, cycle_month);
   ''';
 

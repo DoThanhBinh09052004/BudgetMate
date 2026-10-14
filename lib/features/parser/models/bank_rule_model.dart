@@ -13,10 +13,7 @@ class TypeIndicators {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    'expense': expense,
-    'income': income,
-  };
+  Map<String, dynamic> toJson() => {'expense': expense, 'income': income};
 }
 
 class BankRule {

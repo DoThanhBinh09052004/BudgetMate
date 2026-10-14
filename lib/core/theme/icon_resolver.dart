@@ -6,7 +6,10 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 class IconResolver {
   IconResolver._();
 
-  static IconData resolve(String? iconName, {IconData fallback = Icons.category_rounded}) {
+  static IconData resolve(
+    String? iconName, {
+    IconData fallback = Icons.category_rounded,
+  }) {
     if (iconName == null || iconName.isEmpty) return fallback;
 
     switch (iconName.toLowerCase().trim()) {
@@ -89,7 +92,10 @@ class IconResolver {
   }
 
   /// Chuyển đổi mã màu hex (#RRGGBB) sang Color với fallback an toàn.
-  static Color resolveColor(String? hexString, {Color fallback = const Color(0xFF10B981)}) {
+  static Color resolveColor(
+    String? hexString, {
+    Color fallback = const Color(0xFF10B981),
+  }) {
     if (hexString == null || hexString.isEmpty) return fallback;
     try {
       final clean = hexString.replaceAll('#', '').trim();

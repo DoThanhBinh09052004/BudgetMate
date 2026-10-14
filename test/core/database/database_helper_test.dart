@@ -17,7 +17,9 @@ void main() {
     final helper = DatabaseHelper.instance;
     final db = await helper.getDatabase(inMemory: true);
 
-    final tables = await db.rawQuery("SELECT name FROM sqlite_master WHERE type='table';");
+    final tables = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type='table';",
+    );
     final tableNames = tables.map((t) => t['name'] as String).toList();
 
     expect(tableNames, contains('wallets'));
@@ -59,14 +61,27 @@ void main() {
     });
     expect(id, greaterThan(0));
 
-    final records = await db.query('raw_notifications', where: 'sbn_key = ?', whereArgs: ['key_123']);
+    final records = await db.query(
+      'raw_notifications',
+      where: 'sbn_key = ?',
+      whereArgs: ['key_123'],
+    );
     expect(records.length, 1);
     expect(records.first['package_name'], 'com.techcombank.mobile');
     expect(records.first['is_processed'], 0);
 
     // Update
-    await db.update('raw_notifications', {'is_processed': 1}, where: 'id = ?', whereArgs: [id]);
-    final updated = await db.query('raw_notifications', where: 'id = ?', whereArgs: [id]);
+    await db.update(
+      'raw_notifications',
+      {'is_processed': 1},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    final updated = await db.query(
+      'raw_notifications',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
     expect(updated.first['is_processed'], 1);
 
     await db.close();
@@ -76,7 +91,9 @@ void main() {
     final helper = DatabaseHelper.instance;
     final db = await helper.getDatabase(inMemory: true);
 
-    final indexes = await db.rawQuery("SELECT name FROM sqlite_master WHERE type='index';");
+    final indexes = await db.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type='index';",
+    );
     final indexNames = indexes.map((i) => i['name'] as String).toList();
 
     expect(indexNames, contains('idx_transactions_dedup'));
@@ -115,9 +132,13 @@ void main() {
     final wallets = await db.query('wallets');
     expect(wallets.length, SeedData.defaultWallets.length);
 
-    final rootCategories = await db.query('categories', where: 'parent_id IS NULL');
+    final rootCategories = await db.query(
+      'categories',
+      where: 'parent_id IS NULL',
+    );
     final expectedRootCount =
-        SeedData.defaultExpenseCategories.length + SeedData.defaultIncomeCategories.length;
+        SeedData.defaultExpenseCategories.length +
+        SeedData.defaultIncomeCategories.length;
     expect(rootCategories.length, expectedRootCount);
 
     final allCategories = await db.query('categories');

@@ -4,15 +4,13 @@ import 'package:bugdetmate/core/widgets/app_logo.dart';
 import 'package:bugdetmate/core/constants/app_constants.dart';
 
 void main() {
-  testWidgets('AppLogo renders properly with custom size and constants', (WidgetTester tester) async {
+  testWidgets('AppLogo renders properly with custom size and constants', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
-          body: AppLogo(
-            size: 48,
-            borderRadius: 12,
-            showShadow: true,
-          ),
+          body: AppLogo(size: 48, borderRadius: 12, showShadow: true),
         ),
       ),
     );

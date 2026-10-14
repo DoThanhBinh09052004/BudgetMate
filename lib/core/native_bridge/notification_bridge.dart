@@ -7,7 +7,9 @@ class NotificationBridge {
 
   /// Kiểm tra quyền Notification Listener đã được cấp chưa.
   static Future<bool> checkPermission() async {
-    final result = await _channel.invokeMethod<bool>('checkNotificationPermission');
+    final result = await _channel.invokeMethod<bool>(
+      'checkNotificationPermission',
+    );
     return result ?? false;
   }
 

@@ -36,7 +36,8 @@ class TransferMatcherService {
     // Tìm giao dịch đối ứng: cùng số tiền, khác ví, trong cửa sổ thời gian
     final candidates = await db.query(
       AppTables.transactions,
-      where: '''
+      where:
+          '''
         id != ? AND wallet_id != ? AND wallet_id IN (${walletIds.map((_) => '?').join(',')})
         AND amount = ? AND type = ?
         AND ABS(transaction_date - ?) <= ?
@@ -62,7 +63,8 @@ class TransferMatcherService {
     final candidateNote = candidate['note'] as String? ?? '';
 
     // Kiểm tra từ khóa chuyển khoản
-    final hasKeyword = _containsTransferKeyword(currentNote) ||
+    final hasKeyword =
+        _containsTransferKeyword(currentNote) ||
         _containsTransferKeyword(candidateNote);
 
     if (hasKeyword) {

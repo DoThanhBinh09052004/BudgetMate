@@ -48,7 +48,11 @@ void main() {
     );
 
     // Wallet balance should now be 1,000,000 - 50,000 = 950,000
-    var wallet = (await db.query(AppTables.wallets, where: 'id = ?', whereArgs: [walletId])).first;
+    var wallet = (await db.query(
+      AppTables.wallets,
+      where: 'id = ?',
+      whereArgs: [walletId],
+    )).first;
     expect(wallet['balance'], 950000.0);
 
     // 2. Logic Delete: Delete this transaction of 150,000
@@ -61,11 +65,19 @@ void main() {
     );
 
     // Wallet balance should be refunded: 950,000 + 150,000 = 1,100,000
-    wallet = (await db.query(AppTables.wallets, where: 'id = ?', whereArgs: [walletId])).first;
+    wallet = (await db.query(
+      AppTables.wallets,
+      where: 'id = ?',
+      whereArgs: [walletId],
+    )).first;
     expect(wallet['balance'], 1100000.0);
 
     // Transaction should be removed
-    final remainingTxs = await db.query(AppTables.transactions, where: 'id = ?', whereArgs: [txId]);
+    final remainingTxs = await db.query(
+      AppTables.transactions,
+      where: 'id = ?',
+      whereArgs: [txId],
+    );
     expect(remainingTxs.isEmpty, true);
 
     await db.close();
