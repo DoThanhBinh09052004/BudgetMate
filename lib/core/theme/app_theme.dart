@@ -17,6 +17,7 @@ class AppTheme {
 
   // Brand & Action Colors
   static const Color primaryGreen = Color(0xFF10B981);
+  static const Color primaryEmerald = primaryGreen;
   static const Color primaryGreenDark = Color(0xFF059669);
   static const Color successGreen = Color(0xFF10B981);
   static const Color incomeGreen = Color(0xFF34D399);

@@ -8,7 +8,7 @@ import 'package:bugdetmate/features/budget/models/recurring_payment_model.dart';
 import 'package:bugdetmate/features/transactions/screens/quick_add_sheet.dart';
 import 'package:bugdetmate/features/transactions/screens/edit_transaction_sheet.dart';
 import 'package:bugdetmate/core/theme/icon_resolver.dart';
-import 'package:bugdetmate/features/settings/screens/miui_guide_screen.dart';
+import 'package:bugdetmate/features/settings/screens/permission_guide_screen.dart';
 
 import 'package:bugdetmate/core/widgets/app_logo.dart';
 import 'package:bugdetmate/features/parser/services/regex_parser_service.dart';
@@ -317,11 +317,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         ),
         actions: [
           IconButton(
-            tooltip: 'Hướng dẫn MIUI',
-            icon: const Icon(Icons.shield_outlined, color: AppTheme.warningAmber),
+            tooltip: 'Cài đặt quyền & Chạy nền',
+            icon: const Icon(Icons.tune_rounded, color: AppTheme.primaryEmerald),
             onPressed: () {
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const MiuiGuideScreen()),
+                MaterialPageRoute(builder: (_) => const PermissionGuideScreen()),
               );
             },
           ),
