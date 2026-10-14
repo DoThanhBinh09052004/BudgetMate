@@ -309,7 +309,7 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
               textBaseline: TextBaseline.alphabetic,
               children: [
                 Text(
-                  _type == 'expense' ? '-$displayAmount' : '+$displayAmount',
+                  displayAmount,
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.w800,
@@ -337,11 +337,11 @@ class _QuickAddSheetState extends State<QuickAddSheet> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _buildQuickChip('+50k', 50000),
-                _buildQuickChip('+100k', 100000),
-                _buildQuickChip('+200k', 200000),
-                _buildQuickChip('+500k', 500000),
-                _buildQuickChip('+1M', 1000000),
+                _buildQuickChip('50k', 50000),
+                _buildQuickChip('100k', 100000),
+                _buildQuickChip('200k', 200000),
+                _buildQuickChip('500k', 500000),
+                _buildQuickChip('1M', 1000000),
               ],
             ),
           ),

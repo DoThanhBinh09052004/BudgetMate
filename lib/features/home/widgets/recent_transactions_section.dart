@@ -154,21 +154,28 @@ class RecentTransactionsSection extends StatelessWidget {
                   final catIcon = IconResolver.resolve(catIconStr);
                   final catColor = IconResolver.resolveColor(catColorStr);
 
+                  final trimmedCat = catName?.trim();
+                  final trimmedParent = parentName?.trim();
+                  final trimmedNote = note?.trim();
+
                   String title;
-                  if (parentName != null &&
-                      parentName.isNotEmpty &&
-                      catName != null &&
-                      catName.isNotEmpty) {
-                    title = '$parentName › $catName';
-                  } else if (catName != null && catName.isNotEmpty) {
-                    title = catName;
+                  if (trimmedParent != null &&
+                      trimmedParent.isNotEmpty &&
+                      trimmedCat != null &&
+                      trimmedCat.isNotEmpty) {
+                    title = '$trimmedParent › $trimmedCat';
+                  } else if (trimmedCat != null && trimmedCat.isNotEmpty) {
+                    title = trimmedCat;
+                  } else if (trimmedNote != null && trimmedNote.isNotEmpty) {
+                    title = trimmedNote;
                   } else {
-                    title =
-                        note ?? (type == 'expense' ? 'Chi tiêu' : 'Thu nhập');
+                    title = type == 'expense' ? 'Chi tiêu' : 'Thu nhập';
                   }
 
-                  final subtitle = note != null && note.isNotEmpty
-                      ? '$note • $timeString'
+                  final hasNote = trimmedNote != null && trimmedNote.isNotEmpty;
+                  final isTitleSameAsNote = hasNote && title == trimmedNote;
+                  final subtitle = (hasNote && !isTitleSameAsNote)
+                      ? '$trimmedNote • $timeString'
                       : timeString;
 
                   final isExpense = type == 'expense';

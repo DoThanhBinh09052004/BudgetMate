@@ -64,6 +64,7 @@ void main() {
       expect(transactions.length, 1);
       expect(transactions.first['amount'], 50000.0);
       expect(transactions.first['type'], 'expense');
+      expect(transactions.first['note'], 'Highlands Coffee');
       expect(transactions.first['needs_review'], 0);
 
       // Verify all raw notifications are marked as processed
